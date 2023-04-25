@@ -1,0 +1,35 @@
+{
+  "name": "n_puzzle_js",
+  "version": "1.0.0",
+  "description": "this is a n puzzle solver that uses a* algorithme to find the right path to solving the puzzles",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "npm run build && node dist/index.js",
+    "dev": "npx nodemon  --watch src --exec babel-node src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MoldyLunchBox/N_Puzzle_Js.git"
+  },
+  "author": "abderrahmane mya",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MoldyLunchBox/N_Puzzle_Js/issues"
+  },
+  "homepage": "https://github.com/MoldyLunchBox/N_Puzzle_Js#readme",
+  "devDependencies": {
+    "@babel/cli": "^7.20.7",
+    "@babel/core": "^7.20.12",
+    "@babel/node": "^7.20.7",
+    "@babel/preset-env": "^7.20.2"
+  },
+  "dependencies": {
+    "args-parser": "^1.3.0",
+    "bloomfilter": "^0.0.18",
+    "heapq": "^0.0.3",
+    "js-priority-queue": "^0.1.5",
+    "nodemon": "^2.0.22",
+    "prompt": "^1.3.0",
+    "prompt-sync": "^4.2.0"
+  }
+}
