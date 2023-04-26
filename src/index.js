@@ -24,20 +24,43 @@ function ifvalid(userPieces1, userPieces2, newPiece){
     
 }
 
+async function getPlayerMove(player){
+    const answer = await new Promise((resolve) => {
+        rl.question('Enter a value: ', (answer) => {
+            resolve({row: answer.split(" ")[0], col: answer.split(" ")[1]});
+        });
+    });
+    player.placedPieces.push(answer)
+return answer
+}
+
 async function main() {
+    const player1 = {
+        name: 'player1',
+        piece: 'X',
+        wins: 0 ,
+        placedPieces: [] ,
+      };
+      
+      const player2 = {
+        name: 'player2',
+        piece: 'O',
+        wins: 0 ,
+        placedPieces: [] ,
+      };
+
     const board = createBoard(15, 15)
     let userInput = ""
+    let isPlayer1Turn = true
     while (true) {
         printBoard(board)
-        const answer = await new Promise((resolve) => {
-            rl.question('Enter a value: ', (answer) => {
-                resolve(answer.split(" "));
-            });
-        });
-        console.log(`You entered: ${answer}`);
-        board[answer[0]][answer[1]] = "A"
+        const currentPlayer = isPlayer1Turn ? player1 : player2
+        const newMove = await getPlayerMove(currentPlayer)
+        // log(newMove)
+        // exit()
+        board[newMove.row][newMove.col] = currentPlayer.piece
+        isPlayer1Turn = !isPlayer1Turn
         console.clear()
-        printBoard(board)
     }
 }
 main()
