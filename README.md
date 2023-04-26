@@ -3,7 +3,7 @@
 
 ### Todo list
 - [x] create a console based implementation of the game where two human players can take turns placing the pieces. 
-- [ ] evaluate each user input (error check)
+- [x] evaluate each user input (error check)
 - [ ] add a win check
 - [ ] create a todo list for how to handle the AI player
 
