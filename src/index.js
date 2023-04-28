@@ -95,25 +95,33 @@ function preFillBoard(player, board) {
         board[player.pieces[i].row][player.pieces[i].col] = player.piece
     }
 }
-function minmax(position, depth, player) {
-    if (depth === 0 || position.longestRow == 5) {
-        return position.longestRow;
-    }
+function minimax(position, depth, aiPlayer) {
+  
+    log(position.longestRow("x"), position.longestRow("O"))
+    if (aiPlayer) {
 
-    if (player.name == "ai") {
+        if (depth === 0 || position.longestRow("X") == 5) {
+            return position.longestRow("X");
+            
+        }
         let bestValue = -Infinity;
-        const subPositions =  position.subPosition()
+        const subPositions =  position.subPosition("X")
         for (let move of subPositions) {
             let value = minimax(move, depth - 1, false);
             bestValue = Math.max(bestValue, value);
         }
         return bestValue;
     } else {
+
+        if (depth === 0 || position.longestRow("O") == 5) {
+            return position.longestRow("O");
+    
+        }
         let bestValue = Infinity;
-        const subPositions =  position.subPosition()
+        const subPositions =  position.subPosition("O")
 
         for (let move of subPositions) {
-            let value = minimax(subPositions, depth - 1, true);
+            let value = minimax(move, depth - 1, true);
             bestValue = Math.min(bestValue, value);
         }
         return bestValue;
@@ -122,30 +130,27 @@ function minmax(position, depth, player) {
 async function main() {
     const player1 = {
         name: 'player1',
-        piece: 'X',
+        piece: 'O',
         wins: 0,
         pieces: [
             { row: 0, col: 1 },
             { row: 0, col: 0 },
             { row: 0, col: 2 },
-            { row: 0, col: 3 },
-            { row: 0, col: 4 },
         ],
     };
 
     const player2 = {
         name: 'player2',
-        piece: 'O',
+        piece: 'X',
         wins: 0,
         pieces: [],
     };
     const board = createBoard(5, 5)
     preFillBoard(player1, board)
-    const node = new Node(board, player1, null)
-    log(node.subPositions)
-    log("subpositions", node.subPosition()[0].player.pieces.length)
-    log(node.player.pieces)
-    log(node.score)
+    const node = new Node(board, null)
+    log("subpositions", node.longestRow("O"))
+    const ret = minimax(node, 5,true)
+    log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
     exit()
     let userInput = ""
     let isPlayer1Turn = true

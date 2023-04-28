@@ -12,45 +12,52 @@ function followDirection(currentPiece, direction, playerPieces) {
     return i
 
 }
+function getPieces(piece, board){
+    let playerPieces = []
+    for (let i = 0; i < board.length; i++){
+        for (let j = 0; j < board.length; j++){
+            if (board[i][j] == piece)
+            playerPieces.push({row: i, col: j})
+        }
+    }
+    return playerPieces
+}
 
 export class Node {
-    constructor(board, player1, player2, parent, ai) {
+    constructor(board, parent) {
         this.board = board
-        this.player = ai ? player1 : player2
         this.parent = parent
-        // this.subPositions = this.subPosition()
-        this.score = this.longestRow()
+        //  this.subPositions = this.subPosition()
     }
-    subPosition() {
+    subPosition(piece) {
         let positions = []
-        console.log('hi')
         for (let i = 0; i < this.board.length; i++) {
             for (let j = 0; j < this.board.length; j++) {
                 if (this.board[i][j] === BOARD_EMPTY_CHAR) {
                     const newPosition = JSON.parse(JSON.stringify(this.board))
-                    newPosition[i][j] = this.player.piece
-                    const newPlayer =  JSON.parse(JSON.stringify(this.player))
-                    newPlayer.pieces.push({ row: i, col: j })
-                    positions.push(new Node(newPosition, newPlayer, this))
+                    newPosition[i][j] = piece
+                    // const newPlayer =  JSON.parse(JSON.stringify(this.player))
+                    // newPlayer.pieces.push({ row: i, col: j })
+                    positions.push(new Node(newPosition, this))
                 }
             }
         }
         return positions
     }
 
-    longestRow() {
+    longestRow(piece) {
+        const playerPieces = getPieces(piece, this.board)
         const allMoves= [
-    
           {direction: "up", y: -1, x: 0 }, {direction: "down", y: 1, x: 0 }, {direction: "left", y: 0, x: -1 }, {direction: "right", y: 0, x: 1 },
           {direction: "diagUL", y: -1, x: -1 }, {direction: "diagUR", y: -1, x: 1 }, {direction: "diagDL", y: 1, x: -1 }, {direction: "diagDR", y: 1, x: 1 }
         ]
         let maxRow = 0
-        for (let i = 0; i < this.player.pieces.length; i++) {
+        for (let i = 0; i < playerPieces.length; i++) {
             const availableDirections = JSON.parse(JSON.stringify(allMoves));
             while (availableDirections.length) {
                 const direction = availableDirections.shift()
-                const currentPiece = this.player.pieces[i]
-                const piecesRow = followDirection(currentPiece, direction, this.player.pieces) 
+                const currentPiece = playerPieces[i]
+                const piecesRow = followDirection(currentPiece, direction, playerPieces) 
                 maxRow = piecesRow > maxRow ? piecesRow : maxRow  
             }
         }
