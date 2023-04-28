@@ -27,3 +27,27 @@ X . . . . . . . . . . . . . .
 . . . . . . . . . . . . . . .
 . . . . . . . . . . . . . . .
 ```
+
+function minimax(position, depth, computerPlayer) {
+  if (depth == 0) {
+    return the heuristic value of the position
+  }
+
+  if (computerPlayer) {
+    bestValue = -Infinity
+    for (each possible move m) {
+      newPosition = position after applying m
+      value = minimax(newPosition, depth - 1, false)
+      bestValue = max(bestValue, value)
+    }
+    return bestValue
+  } else {
+    bestValue = Infinity
+    for (each possible move m) {
+      newPosition = position after applying m
+      value = minimax(newPosition, depth - 1, true)
+      bestValue = min(bestValue, value)
+    }
+    return bestValue
+  }
+}

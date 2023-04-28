@@ -1,6 +1,6 @@
 const { exit } = require('process');
 const readline = require('readline');
-import {Node} from './lib/Node'
+import { Node } from './lib/Node'
 const BOARD_EMPTY_CHAR = '.'
 
 const rl = readline.createInterface({
@@ -35,10 +35,10 @@ function inputIsValid(newPiece, board) {
 function followDirection(currentPiece, direction, playerPieces) {
     let i = 0
     let moveExists = true
-    let pathElement = {row: currentPiece.row + direction.y, col: currentPiece.col + direction.x}
-    log("loooking for ", pathElement, "in" , playerPieces)
-    while (i < 5 && moveExists){
-        pathElement = {row: pathElement.row + direction.y, col: pathElement.col + direction.x}
+    let pathElement = { row: currentPiece.row + direction.y, col: currentPiece.col + direction.x }
+    log("loooking for ", pathElement, "in", playerPieces)
+    while (i < 5 && moveExists) {
+        pathElement = { row: pathElement.row + direction.y, col: pathElement.col + direction.x }
         moveExists = playerPieces.find(obj => obj.row === pathElement.row && obj.col === pathElement.col);
         i++
     }
@@ -48,12 +48,12 @@ function followDirection(currentPiece, direction, playerPieces) {
 
 }
 function winnerCheck(player, board) {
-    const allMoves= [
+    const allMoves = [
 
-      {direction: "up", y: -1, x: 0 }, {direction: "down", y: 1, x: 0 }, {direction: "left", y: 0, x: -1 }, {direction: "right", y: 0, x: 1 },
-      {direction: "diagUL", y: -1, x: -1 }, {direction: "diagUR", y: -1, x: 1 }, {direction: "diagDL", y: 1, x: -1 }, {direction: "diagDR", y: 1, x: 1 }
+        { direction: "up", y: -1, x: 0 }, { direction: "down", y: 1, x: 0 }, { direction: "left", y: 0, x: -1 }, { direction: "right", y: 0, x: 1 },
+        { direction: "diagUL", y: -1, x: -1 }, { direction: "diagUR", y: -1, x: 1 }, { direction: "diagDL", y: 1, x: -1 }, { direction: "diagDR", y: 1, x: 1 }
     ]
-    
+
     // const allMoves = [
     //     "up", "down", "left", "right",
     //     "diagUL", "diagUR", "diagDL", "diagDR"
@@ -63,8 +63,8 @@ function winnerCheck(player, board) {
         while (availableDirections.length) {
             const direction = availableDirections.shift()
             const currentPiece = player.pieces[i]
-        
-            if (followDirection(currentPiece, direction, player.pieces)){
+
+            if (followDirection(currentPiece, direction, player.pieces)) {
                 log("winner", player.name)
                 exit()
             }
@@ -90,31 +90,34 @@ async function getPlayerMove(player, board, winner) {
     winner = winnerCheck(player)
     return answer
 }
-function preFillBoard(player, board){
-    for (let i = 0; i < player.pieces.length; i++){
+function preFillBoard(player, board) {
+    for (let i = 0; i < player.pieces.length; i++) {
         board[player.pieces[i].row][player.pieces[i].col] = player.piece
     }
 }
-function minmax(position, depth, player){
+function minmax(position, depth, player) {
     if (depth === 0 || position.longestRow == 5) {
         return position.longestRow;
-      }
-    
-      if (player.name == "ai") {
+    }
+
+    if (player.name == "ai") {
         let bestValue = -Infinity;
-        for (let move of position.subPositions) {
-          let value = minimax(position.applyMove(move, player, position), depth - 1, false);
-          bestValue = Math.max(bestValue, value);
+        const subPositions =  position.subPosition()
+        for (let move of subPositions) {
+            let value = minimax(move, depth - 1, false);
+            bestValue = Math.max(bestValue, value);
         }
         return bestValue;
-      } else {
+    } else {
         let bestValue = Infinity;
-        for (let move of position.getMoves()) {
-          let value = minimax(position.applyMove(move), depth - 1, true);
-          bestValue = Math.min(bestValue, value);
+        const subPositions =  position.subPosition()
+
+        for (let move of subPositions) {
+            let value = minimax(subPositions, depth - 1, true);
+            bestValue = Math.min(bestValue, value);
         }
         return bestValue;
-      }
+    }
 }
 async function main() {
     const player1 = {
@@ -127,7 +130,7 @@ async function main() {
             { row: 0, col: 2 },
             { row: 0, col: 3 },
             { row: 0, col: 4 },
-          ],
+        ],
     };
 
     const player2 = {
@@ -140,8 +143,8 @@ async function main() {
     preFillBoard(player1, board)
     const node = new Node(board, player1, null)
     log(node.subPositions)
-    log(node.subPositions.length)
-
+    log("subpositions", node.subPosition()[0].player.pieces.length)
+    log(node.player.pieces)
     log(node.score)
     exit()
     let userInput = ""

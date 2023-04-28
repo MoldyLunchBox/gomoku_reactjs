@@ -14,11 +14,11 @@ function followDirection(currentPiece, direction, playerPieces) {
 }
 
 export class Node {
-    constructor(board, player, parent) {
+    constructor(board, player1, player2, parent, ai) {
         this.board = board
-        this.player = player
+        this.player = ai ? player1 : player2
         this.parent = parent
-        this.subPositions = this.subPosition()
+        // this.subPositions = this.subPosition()
         this.score = this.longestRow()
     }
     subPosition() {
@@ -29,14 +29,13 @@ export class Node {
                 if (this.board[i][j] === BOARD_EMPTY_CHAR) {
                     const newPosition = JSON.parse(JSON.stringify(this.board))
                     newPosition[i][j] = this.player.piece
-                    positions.push(newPosition)
+                    const newPlayer =  JSON.parse(JSON.stringify(this.player))
+                    newPlayer.pieces.push({ row: i, col: j })
+                    positions.push(new Node(newPosition, newPlayer, this))
                 }
             }
         }
         return positions
-    }
-    applyMove(board, player, parent ){
-        return new Node(board, player, parent)
     }
 
     longestRow() {
