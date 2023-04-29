@@ -8,7 +8,7 @@ const rl = readline.createInterface({
     output: process.stdout
 });
 const { log } = console
-const DEPTH = 5;
+const DEPTH = 4;
 
 function createBoard(rows, cols) {
     const array = new Array(rows);
@@ -36,7 +36,6 @@ function followDirection(currentPiece, direction, playerPieces) {
     let i = 0
     let moveExists = true
     let pathElement = { row: currentPiece.row + direction.y, col: currentPiece.col + direction.x }
-    log("loooking for ", pathElement, "in", playerPieces)
     while (i < 5 && moveExists) {
         pathElement = { row: pathElement.row + direction.y, col: pathElement.col + direction.x }
         moveExists = playerPieces.find(obj => obj.row === pathElement.row && obj.col === pathElement.col);
@@ -172,17 +171,12 @@ async function main() {
   
     const isMaximizingPlayer = true;
 
-    // const bestMove = minimax(node, depth, isMaximizingPlayer, alpha, beta);
-    // log("bestmove", bestMove)
-
-    log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
     let userInput = ""
     let isPlayer1Turn = true
     var winner = false
     while (true) {
         printBoard(board)
         const currentPlayer = isPlayer1Turn ? player1 : player2
-        log(currentPlayer.pieces)
         if (currentPlayer.name == "player1") {
 
             var newMove = await getPlayerMove(currentPlayer, board, winner)
@@ -194,9 +188,7 @@ async function main() {
              board = minimax(node, DEPTH, isMaximizingPlayer, alpha, beta).board;
             currentPlayer.pieces = getPieces(board, "X")
         }
-        // log(newMove)
-        // exit()
-        // console.clear()
+        log("---------------------")
         isPlayer1Turn = !isPlayer1Turn
     }
 }
