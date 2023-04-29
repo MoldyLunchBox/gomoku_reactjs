@@ -1,6 +1,6 @@
 const { exit } = require('process');
 const readline = require('readline');
-import { getPieces, Node } from './lib/Node'
+import { Node } from './lib/Node'
 const BOARD_EMPTY_CHAR = '.'
 
 const rl = readline.createInterface({
@@ -8,7 +8,7 @@ const rl = readline.createInterface({
     output: process.stdout
 });
 const { log } = console
-const DEPTH = 5;
+
 
 function createBoard(rows, cols) {
     const array = new Array(rows);
@@ -95,60 +95,51 @@ function preFillBoard(player, board) {
         board[player.pieces[i].row][player.pieces[i].col] = player.piece
     }
 }
-function minimax(position, depth, aiPlayer, alpha, beta) {
-    var bestMove = null
+function minimax(position, depth, aiPlayer) {
+  
+    log(position.longestRow("x"), position.longestRow("O"))
     if (aiPlayer) {
 
         if (depth === 0 || position.longestRow("X") == 5) {
-            return position.longestRow("X");
 
+            return position.longestRow("X");
+            
         }
         let bestValue = -Infinity;
-        const subPositions = position.subPosition("X")
-        subPositions.sort((a, b) => a.evaluatePosition() - b.evaluatePosition());
-
+        const subPositions =  position.subPosition("X")
         for (let move of subPositions) {
-            bestMove = move
-            let value = minimax(move, depth - 1, false, alpha, beta);
+            let value = minimax(move, depth - 1, false);
             bestValue = Math.max(bestValue, value);
-            alpha = Math.max(alpha, value);
-            if (beta <= alpha) {
-
-                break;
-            }
         }
-        if (depth == DEPTH)
-            return bestMove
         return bestValue;
     } else {
 
         if (depth === 0 || position.longestRow("O") == 5) {
-            return position.longestRow("O");
+            log('eh')
 
+            return position.longestRow("O");
+    
         }
         let bestValue = Infinity;
-        const subPositions = position.subPosition("O")
+        const subPositions =  position.subPosition("O")
 
         for (let move of subPositions) {
-            bestMove = move
-            let value = minimax(move, depth - 1, true, alpha, beta);
+            let value = minimax(move, depth - 1, true);
             bestValue = Math.min(bestValue, value);
-            beta = Math.min(beta, value);
-            if (beta <= alpha) {
-                break;
-            }
         }
-        if (depth ==  DEPTH)
-            return bestMove
         return bestValue;
     }
 }
+
 async function main() {
     const player1 = {
         name: 'player1',
         piece: 'O',
         wins: 0,
         pieces: [
+            { row: 0, col: 1 },
+            { row: 0, col: 0 },
+            { row: 0, col: 2 },
         ],
     };
 
@@ -156,26 +147,15 @@ async function main() {
         name: 'player2',
         piece: 'X',
         wins: 0,
-        pieces: [
-            { row: 2, col: 1 },
-            { row: 2, col: 0 },
-            { row: 2, col: 2 },
-            { row: 2, col: 4 },
-        ],
+        pieces: [],
     };
-    let board = createBoard(5, 5)
-    preFillBoard(player2, board)
+    const board = createBoard(5, 5)
+    preFillBoard(player1, board)
     const node = new Node(board, null)
-    printBoard(node.board)
-    const alpha = Number.NEGATIVE_INFINITY;
-    const beta = Number.POSITIVE_INFINITY;
-  
-    const isMaximizingPlayer = true;
-
-    // const bestMove = minimax(node, depth, isMaximizingPlayer, alpha, beta);
-    // log("bestmove", bestMove)
-
+    log("subpositions", node.longestRow("O"))
+    const ret = minimax(node, 3,true)
     log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+    exit()
     let userInput = ""
     let isPlayer1Turn = true
     var winner = false
@@ -183,21 +163,12 @@ async function main() {
         printBoard(board)
         const currentPlayer = isPlayer1Turn ? player1 : player2
         log(currentPlayer.pieces)
-        if (currentPlayer.name == "player1") {
-
-            var newMove = await getPlayerMove(currentPlayer, board, winner)
-            board[newMove.row][newMove.col] = currentPlayer.piece
-        }
-        else {
-
-            const node = new Node(board, null)
-             board = minimax(node, DEPTH, isMaximizingPlayer, alpha, beta).board;
-            currentPlayer.pieces = getPieces(board, "X")
-        }
+        const newMove = await getPlayerMove(currentPlayer, board, winner)
         // log(newMove)
         // exit()
-        // console.clear()
+        board[newMove.row][newMove.col] = currentPlayer.piece
         isPlayer1Turn = !isPlayer1Turn
+        // console.clear()
     }
 }
 main()

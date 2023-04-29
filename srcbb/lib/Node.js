@@ -1,11 +1,10 @@
 const BOARD_EMPTY_CHAR = '.'
 function followDirection(currentPiece, direction, playerPieces) {
-    let i = 0
+    let i = 1
     let moveExists = true
-    let pathElement = {row: currentPiece.row , col: currentPiece.col }
+    let pathElement = {row: currentPiece.row + direction.y, col: currentPiece.col + direction.x}
     while (i < 5 && moveExists){
         pathElement = {row: pathElement.row + direction.y, col: pathElement.col + direction.x}
-
         moveExists = playerPieces.find(obj => obj.row === pathElement.row && obj.col === pathElement.col);
         i++
     }
@@ -13,7 +12,7 @@ function followDirection(currentPiece, direction, playerPieces) {
     return i
 
 }
-export function getPieces(piece, board){
+function getPieces(piece, board){
     let playerPieces = []
     for (let i = 0; i < board.length; i++){
         for (let j = 0; j < board.length; j++){
@@ -28,7 +27,6 @@ export class Node {
     constructor(board, parent) {
         this.board = board
         this.parent = parent
-        this.evalScore = this.evaluatePosition()
         //  this.subPositions = this.subPosition()
     }
     subPosition(piece) {
@@ -65,11 +63,5 @@ export class Node {
         }
         return maxRow
     }
-    evaluatePosition() {
-        const xLongestRow = this.longestRow("X");
-        const oLongestRow = this.longestRow("O");
-        // Score is the difference between longest rows
-        return xLongestRow - oLongestRow;
-      }
 
 }
