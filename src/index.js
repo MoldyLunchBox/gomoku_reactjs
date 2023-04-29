@@ -113,11 +113,7 @@ function minimax(position, depth, aiPlayer, alpha, beta) {
             bestValue = Math.max(bestValue, value);
             alpha = Math.max(alpha, value);
             if (beta <= alpha) {
-                if (depth == 4){
-
-                    console.log(beta, alpha, depth)
-                    exit()
-                }
+              
                 break;
               }
         }
@@ -168,26 +164,26 @@ async function main() {
     printBoard(node.board)
     const alpha = Number.NEGATIVE_INFINITY;
     const beta = Number.POSITIVE_INFINITY;
-    const depth = 5;
+    const depth = 4;
     const isMaximizingPlayer = true;
     
     const bestMove = minimax(node, depth, isMaximizingPlayer, alpha, beta);
     log("bestmove", bestMove)
-    exit()
-    log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-    let userInput = ""
-    let isPlayer1Turn = true
-    var winner = false
-    while (true) {
-        printBoard(board)
-        const currentPlayer = isPlayer1Turn ? player1 : player2
-        log(currentPlayer.pieces)
-        const newMove = await getPlayerMove(currentPlayer, board, winner)
-        // log(newMove)
-        // exit()
-        board[newMove.row][newMove.col] = currentPlayer.piece
-        isPlayer1Turn = !isPlayer1Turn
-        // console.clear()
-    }
+    
+    // log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+    // let userInput = ""
+    // let isPlayer1Turn = true
+    // var winner = false
+    // while (true) {
+    //     printBoard(board)
+    //     const currentPlayer = isPlayer1Turn ? player1 : player2
+    //     log(currentPlayer.pieces)
+    //     const newMove = await getPlayerMove(currentPlayer, board, winner)
+    //     // log(newMove)
+    //     // exit()
+    //     board[newMove.row][newMove.col] = currentPlayer.piece
+    //     isPlayer1Turn = !isPlayer1Turn
+    //     // console.clear()
+    // }
 }
 main()
