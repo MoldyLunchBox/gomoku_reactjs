@@ -28,7 +28,7 @@ export class Node {
     constructor(board, parent) {
         this.board = board
         this.parent = parent
-        this.evalScore = this.evaluatePosition()
+        // this.evalScore = this.evaluatePosition()
         //  this.subPositions = this.subPosition()
     }
     subPosition(piece) {
@@ -65,11 +65,11 @@ export class Node {
         }
         return maxRow
     }
-    evaluatePosition() {
-        const xLongestRow = this.longestRow("X");
-        const oLongestRow = this.longestRow("O");
-        // Score is the difference between longest rows
-        return xLongestRow - oLongestRow;
-      }
+    // evaluatePosition() {
+    //     const xLongestRow = this.longestRow("X");
+    //     const oLongestRow = this.longestRow("O");
+    //     // Score is the difference between longest rows
+    //     return xLongestRow - oLongestRow;
+    //   }
 
 }
