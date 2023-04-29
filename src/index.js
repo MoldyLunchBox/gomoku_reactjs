@@ -95,9 +95,8 @@ function preFillBoard(player, board) {
         board[player.pieces[i].row][player.pieces[i].col] = player.piece
     }
 }
-function minimax(position, depth, aiPlayer) {
-  
-    log(position.longestRow("x"), position.longestRow("O"))
+function minimax(position, depth, aiPlayer, alpha, beta) {
+    console.log(depth)
     if (aiPlayer) {
 
         if (depth === 0 || position.longestRow("X") == 5) {
@@ -106,9 +105,21 @@ function minimax(position, depth, aiPlayer) {
         }
         let bestValue = -Infinity;
         const subPositions =  position.subPosition("X")
+        subPositions.sort((a, b) => a.evaluatePosition() - b.evaluatePosition());
+     
+
         for (let move of subPositions) {
-            let value = minimax(move, depth - 1, false);
+            let value = minimax(move, depth - 1, false,  alpha, beta);
             bestValue = Math.max(bestValue, value);
+            alpha = Math.max(alpha, value);
+            if (beta <= alpha) {
+                if (depth == 4){
+
+                    console.log(beta, alpha, depth)
+                    exit()
+                }
+                break;
+              }
         }
         return bestValue;
     } else {
@@ -121,8 +132,12 @@ function minimax(position, depth, aiPlayer) {
         const subPositions =  position.subPosition("O")
 
         for (let move of subPositions) {
-            let value = minimax(move, depth - 1, true);
+            let value = minimax(move, depth - 1, true,  alpha, beta);
             bestValue = Math.min(bestValue, value);
+            beta = Math.min(beta, value);
+            if (beta <= alpha) {
+              break;
+            }
         }
         return bestValue;
     }
@@ -133,9 +148,6 @@ async function main() {
         piece: 'O',
         wins: 0,
         pieces: [
-            { row: 0, col: 1 },
-            { row: 0, col: 0 },
-            { row: 0, col: 2 },
         ],
     };
 
@@ -143,15 +155,26 @@ async function main() {
         name: 'player2',
         piece: 'X',
         wins: 0,
-        pieces: [],
+        pieces: [
+            { row: 2, col: 1 },
+            { row: 2, col: 0 },
+            { row: 2, col: 2 },
+            { row: 2, col: 4 },
+        ],
     };
     const board = createBoard(5, 5)
-    preFillBoard(player1, board)
+    preFillBoard(player2, board)
     const node = new Node(board, null)
-    log("subpositions", node.longestRow("O"))
-    const ret = minimax(node, 5,true)
-    log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+    printBoard(node.board)
+    const alpha = Number.NEGATIVE_INFINITY;
+    const beta = Number.POSITIVE_INFINITY;
+    const depth = 5;
+    const isMaximizingPlayer = true;
+    
+    const bestMove = minimax(node, depth, isMaximizingPlayer, alpha, beta);
+    log("bestmove", bestMove)
     exit()
+    log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
     let userInput = ""
     let isPlayer1Turn = true
     var winner = false
