@@ -104,7 +104,7 @@ function minimax(position, depth, aiPlayer, alpha, beta) {
         }
         let bestValue = -Infinity;
         const subPositions = position.subPosition("X")
-        subPositions.sort((a, b) => a.evaluatePosition() - b.evaluatePosition());
+        subPositions.sort((a, b) => b.longestRow("X") - a.longestRow("X"));
 
         for (let move of subPositions) {
             bestMove = move
@@ -127,6 +127,7 @@ function minimax(position, depth, aiPlayer, alpha, beta) {
         }
         let bestValue = Infinity;
         const subPositions = position.subPosition("O")
+        subPositions.sort((a, b) => b.longestRow("O") - a.longestRow("O"));
 
         for (let move of subPositions) {
             bestMove = move
