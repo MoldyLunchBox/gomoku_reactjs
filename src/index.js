@@ -113,32 +113,29 @@ function minimax(position, depth, aiPlayer, alpha, beta, tracker) {
         // subPositions.sort((b, a) => 
         // ((a.longestRow("X") * 10) + a.connectedPieces("X") + a.blockEnemy("O")) - ((b.longestRow("X") * 10) + b.connectedPieces("X") + b.blockEnemy("O") )  );
         // // ((a.longestRow("O") * 10) + a.connectedPieces("O")) - ((b.longestRow("O") * 10) + b.connectedPieces("O"))
-    console.log(subPositions)
-        while (!subPositions.isEmpty()){
-            const move = subPositions.dequeue()
-            log(move)
-        }
-        for (let move of subPositions) {
-            tracker.memory++
-            // let value = minimax(move, depth - 1, false, alpha, beta, tracker);
-            // bestMove = value > bestValue ? move : bestMove
-            // bestValue = Math.max(bestValue, value);
-            // alpha = Math.max(alpha, value);
-
-            if (depth == DEPTH){
-                log(move.board,"\n\n")
-                log('best move board', bestMove)
-                log("value", value, "\nbestvalue", bestValue,"\nalpha",alpha,"\nbeta", beta)
-                // console.log("X",((move.longestRow("X") * 10) + move.connectedPieces("X")) )
-                // log("O",  ((move.longestRow("O") * 10) + move.connectedPieces("O")))
-                log("total",  (move.longestRow("X") * 10) + move.connectedPieces("X") + move.blockEnemy("O"))
-            }
+    // console.log(subPositions)
+    while (!subPositions.isEmpty()){
+        const move = subPositions.dequeue()
+        tracker.memory++
+            let value = minimax(move, depth - 1, false, alpha, beta, tracker);
+            bestMove = value > bestValue ? move : bestMove
+            bestValue = Math.max(bestValue, value);
+            alpha = Math.max(alpha, value);
             if (beta <= alpha) {
-
+    
                 break;
             }
+            // if (depth == DEPTH){
+            //     log(move.board,"\n\n")
+            //     log('best move board', bestMove)
+            //     log("value", value, "\nbestvalue", bestValue,"\nalpha",alpha,"\nbeta", beta)
+            //     // console.log("X",((move.longestRow("X") * 10) + move.connectedPieces("X")) )
+            //     // log("O",  ((move.longestRow("O") * 10) + move.connectedPieces("O")))
+            //     log("total",  (move.longestRow("X") * 10) + move.connectedPieces("X") + move.blockEnemy("O"))
+            // }
         }
-        exit()
+    
+        // exit()
         if (depth == DEPTH){
             // console.log((bestMove.longestRow("X") * 2) + bestMove.connectedPieces("X"), "=", bestMove.longestRow("X"), "x 2 +", bestMove.connectedPieces("X") )
             return bestMove
@@ -155,29 +152,19 @@ function minimax(position, depth, aiPlayer, alpha, beta, tracker) {
         }
         let bestValue = Infinity;
         const subPositions = position.subPosition("O")
-        subPositions.sort((b,a) => 
-        ((a.longestRow("O") * 10) + a.connectedPieces("O") + a.blockEnemy("X")) - ((b.longestRow("O") * 10) + b.connectedPieces("O") + b.blockEnemy("X")  )  );
-        // ((a.longestRow("O") * 10) + a.connectedPieces("O")) - ((b.longestRow("O") * 10) + b.connectedPieces("O"))
-        for (let move of subPositions) {
-            bestMove = move
+        while (!subPositions.isEmpty()){
+            const move = subPositions.dequeue()
             tracker.player++
-
             let value = minimax(move, depth - 1, true, alpha, beta, tracker);
             bestValue = Math.min(bestValue, value);
-        //    if (depth == DEPTH-1){
-        //         log(move.board,"\n\n") 456 1848 2304
-        //         log('best move board', bestMove)
-        //         // log("value", value, "\nbestvalue", bestValue,"\nalpha",alpha,"\nbeta", beta)
-        //         // console.log("X",((move.longestRow("X") * 10) + move.connectedPieces("X")) )
-        //         // log("O",  ((move.longestRow("O") * 10) + move.connectedPieces("O")))
-        //         log("total",  (move.longestRow("O") * 10) + move.connectedPieces("O") + move.blockEnemy("X"))
-        //     }
-            beta = Math.min(beta, value);
-            if (beta <= alpha) {
-                // log("exited")
-                break;
-            }
-        }
+                bestValue = Math.max(bestValue, value);
+                beta = Math.min(beta, value);
+                if (beta <= alpha) {
+                    // log("exited")
+                    break;
+                }   
+            } 
+
         
         // if (depth == DEPTH - 1)
         //     exit()
@@ -227,7 +214,7 @@ async function main() {
 
         ],
     };
-    let board = createBoard(5, 5)
+    let board = createBoard(7, 7)
     preFillBoard(player2, board)
     preFillBoard(player1, board)
     
@@ -240,8 +227,10 @@ async function main() {
     let userInput = ""
     let isPlayer1Turn = true
     var winner = false
+    let time = 0
     while (true) {
         printBoard(board)
+    log("time", time)
         console.log(tracker.memory, tracker.player,tracker.memory+ tracker.player )
         const currentPlayer = isPlayer1Turn ? player1 : player2
         if (currentPlayer.name == "player1") {
@@ -252,9 +241,10 @@ async function main() {
         else {
 
             const node = new Node(board, "X", null)
+            const start = process.hrtime();
              board = minimax(node, DEPTH, isMaximizingPlayer, alpha, beta, tracker).board;
             currentPlayer.pieces = getPieces(board, "X")
-
+            time = process.hrtime(start);
         }
         log("---------------------")
         isPlayer1Turn = !isPlayer1Turn

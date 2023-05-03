@@ -167,7 +167,7 @@ export class Node {
                     newPosition[i][j] = piece
                     // const newPlayer =  JSON.parse(JSON.stringify(this.player))
                     // newPlayer.pieces.push({ row: i, col: j })
-                    positions.queue(new Node(newPosition, piece, { row: i, col: j }))
+                    positions.enqueue(new Node(newPosition, piece, { row: i, col: j }))
                 }
             }
         }
