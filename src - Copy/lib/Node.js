@@ -77,11 +77,11 @@ export function getPieces(piece, board) {
 
 function directionCounter(currentPiece, direction, playerPieces, board) {
     let i = 0
-    let winnableRow = 0
+    
     let moveExists = playerPieces.find(obj => obj.row === currentPiece.row && obj.col === currentPiece.col);
     let pathElement = { row: currentPiece.row, col: currentPiece.col }
     let reversed = false
-    while ( i < 5 && moveExists) {
+    while (i < 5 && moveExists) {
         pathElement = { row: pathElement.row + direction.y, col: pathElement.col + direction.x }
 
         moveExists = playerPieces.find(obj => obj.row === pathElement.row && obj.col === pathElement.col);
