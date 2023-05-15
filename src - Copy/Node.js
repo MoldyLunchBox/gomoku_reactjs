@@ -53,7 +53,7 @@ function followDirection(currentPiece, direction, playerPieces) {
     let pathElement = { row: currentPiece.row, col: currentPiece.col }
     while (i < 5 && moveExists) {
         pathElement = { row: pathElement.row + direction.y, col: pathElement.col + direction.x }
-   
+
         moveExists = playerPieces.find(obj => obj.row === pathElement.row && obj.col === pathElement.col);
         i++
     }
@@ -76,16 +76,12 @@ export function getPieces(piece, board) {
 }
 
 function directionCounter(currentPiece, direction, playerPieces, board) {
-    console.log(playerPieces, currentPiece)
-    console.log("in")
-    
     let i = 0
     let winnableRow = 0
     let moveExists = playerPieces.find(obj => obj.row === currentPiece.row && obj.col === currentPiece.col);
-    console.log("out")
     let pathElement = { row: currentPiece.row, col: currentPiece.col }
     let reversed = false
-    while (i < 5 && moveExists) {
+    while ( i < 5 && moveExists) {
         pathElement = { row: pathElement.row + direction.y, col: pathElement.col + direction.x }
 
         moveExists = playerPieces.find(obj => obj.row === pathElement.row && obj.col === pathElement.col);
@@ -93,7 +89,7 @@ function directionCounter(currentPiece, direction, playerPieces, board) {
             direction = { direction: direction.direction, y: direction.y * -1, x: direction.x * -1 }
             pathElement = { row: currentPiece.row + direction.y, col: currentPiece.col + direction.x }
             reversed = true
-            moveExists = playerPieces.find(obj => obj.row === pathElement.row && obj.col === pathElement.col);
+        moveExists = playerPieces.find(obj => obj.row === pathElement.row && obj.col === pathElement.col);
 
         }
         i++
@@ -140,13 +136,13 @@ export class Node {
     constructor(board, piece, newPiece) {
         this.board = board
         this.newPiece = newPiece
-        this.piece = piece
+        this.piece = piece  
         if (newPiece != null)
-            this.score = (this.longestRow(piece, piece == "X" ? "O" : "X") * 10) 
+        this.score = (this.longestRow(piece) * 10) + this.connectedPieces(piece) + this.blockEnemy(piece == "X" ? "O" : "X" ) 
         // this.evalScore = this.evaluatePosition()
         //  this.subPositions = this.subPosition()
     }
-    generateMoves(piece) {
+    subPosition(piece) {
         let positions = new PriorityQueue()
         for (let i = 0; i < this.board.length; i++) {
             for (let j = 0; j < this.board.length; j++) {
@@ -155,7 +151,6 @@ export class Node {
                     newPosition[i][j] = piece
                     // const newPlayer =  JSON.parse(JSON.stringify(this.player))
                     // newPlayer.pieces.push({ row: i, col: j })
-                    console.log("yo")
                     positions.enqueue(new Node(newPosition, piece, { row: i, col: j }))
                 }
             }
@@ -163,21 +158,13 @@ export class Node {
         return positions
     }
 
-    score(piece, enemyPiece) {
-        console.log("here", this.newPiece)
-        exit()
+    longestRow(piece) {
         const playerPieces = getPieces(piece, this.board)
-        const enemyPieces = getPieces(enemyPiece, this.board)
-        let enemyBlocker = true
-        enemyPieces.push(this.newPiece)
         const allMoves = [
             { direction: "up", y: -1, x: 0 }, { direction: "down", y: 1, x: 0 }, { direction: "left", y: 0, x: -1 }, { direction: "right", y: 0, x: 1 },
             { direction: "diagUL", y: -1, x: -1 }, { direction: "diagUR", y: -1, x: 1 }, { direction: "diagDL", y: 1, x: -1 }, { direction: "diagDR", y: 1, x: 1 }
         ]
         let maxRow = 0
-        let enemyMaxRow = 0
-        let connections = 0
-
         for (let i = 0; i < playerPieces.length; i++) {
             const availableDirections = JSON.parse(JSON.stringify(allMoves));
             while (availableDirections.length) {
@@ -187,20 +174,9 @@ export class Node {
                     const piecesRow = directionCounter(currentPiece, direction, playerPieces, this.board)
                     maxRow = piecesRow > maxRow ? piecesRow : maxRow
                 }
-                const ret = followDirection(currentPiece, direction, playerPieces)
-                if (enemyBlocker){
-                    const enemyRow = directionCounter(this.newPiece, direction, enemyPieces, this.board) - 1
-                    enemyMaxRow = enemyRow > enemyMaxRow ? enemyRow : enemyMaxRow
-                }
-                connections += ret
             }
-            enemyBlocker = !enemyBlocker
         }
-        if (enemyMaxRow == 3)
-            enemyMaxRow = 10
-        if (enemyMaxRow > 3)
-            enemyMaxRow = 1000
-        return maxRow * 10 + enemyMaxRow + connections
+        return maxRow
     }
 
     connectedPieces(piece) {

@@ -109,62 +109,103 @@ function memoize(func) {
 }
 let memo = {};
 
-function minimax(position, depth, aiPlayer, alpha, beta, tracker) {
+// function minimax(position, depth, aiPlayer, alpha, beta, tracker) {
+    
+//     log("aaaaa")
+//     var bestMove = null
+//     if (depth === 0 || (aiPlayer && position.longestRow("X") == 5) || (!aiPlayer && position.longestRow("O") == 5)) {
+//         if (aiPlayer)
+//             return ((position.longestRow("X") * 10) + position.connectedPieces("X") )
 
-    var bestMove = null
-    if (depth === 0 || (aiPlayer && position.longestRow("X") == 5) || (!aiPlayer && position.longestRow("O") == 5)) {
-        if (aiPlayer)
-            return ((position.longestRow("X") * 10) + position.connectedPieces("X") )
-
-        else
-            return ((position.longestRow("O") * 10) + position.connectedPieces("O") )
-
-
-    }
-
-    let key = position.board.join("");
-    if (memo.hasOwnProperty(key)) { // Check if we've evaluated this board before
-        log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-        return memo[key];
-      }
-    let bestValue = aiPlayer ? -Infinity : Infinity;
-
-    const subPositions = aiPlayer ? position.subPosition("X") : position.subPosition("O")
-
-    while (!subPositions.isEmpty()) {
-        const move = subPositions.dequeue()
-        tracker.memory++
-        var  value = minimax(move, depth - 1, !aiPlayer, alpha, beta, tracker);
-            bestMove = value > bestValue ? move : bestMove
-        bestValue = aiPlayer ? Math.max(bestValue, value) : Math.max(bestValue, value);
-
-        if (aiPlayer) 
-            alpha = Math.max(alpha, value);
-        else 
-            beta = Math.min(beta, value);
+//         else
+//             return ((position.longestRow("O") * 10) + position.connectedPieces("O") )
+            
+            
+//         }
         
-        if (beta <= alpha)
-            break;
-        
-        // if (depth == DEPTH - 1){
-        //     log(move.board)
-        //     log('best move board', bestMove)
-        //     log('score', move.score, 'value', value,"\n\n-----------------\n\n")
-        // //     log("value", value, "\nbestvalue", bestValue,"\nalpha",alpha,"\nbeta", beta)
-        // //     // console.log("X",((move.longestRow("X") * 10) + move.connectedPieces("X")) )
-        // //     // log("O",  ((move.longestRow("O") * 10) + move.connectedPieces("O")))
-        // //     log("total",  (move.longestRow("X") * 10) + move.connectedPieces("X") + move.blockEnemy("O"))
-        // }
-    }
-    // if (depth == DEPTH-1)
-    // exit()
-    memo[key] = bestValue
-    if (depth == DEPTH) {
-        return bestMove
-    }
-    return bestValue;
+//     let key = position.board.join("");
+//     if (memo.hasOwnProperty(key)) { // Check if we've evaluated this board before
+//         log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+//         return memo[key];
+//       }
+//     let bestValue = aiPlayer ? -Infinity : Infinity;
 
+//     const subPositions = aiPlayer ? position.subPosition("X") : position.subPosition("O")
+// let i = 0
+//     while (!subPositions.isEmpty()) {
+//         const move = subPositions.dequeue()
+//         // tracker.memory++
+//         // var  value = minimax(move, depth - 1, !aiPlayer, alpha, beta, tracker);
+//         //     bestMove = value > bestValue ? move : bestMove
+//         // bestValue = aiPlayer ? Math.max(bestValue, value) : Math.max(bestValue, value);
+
+//         // if (aiPlayer) 
+//         //     alpha = Math.max(alpha, value);
+//         // else 
+//         //     beta = Math.min(beta, value);
+        
+//         // if (beta <= alpha)
+//         //     break;
+        
+//         if (depth == DEPTH && i < 5){
+//             printBoard(move.board)
+//             // log('best move board', bestMove)
+//             log('score', move.score, "\n\n-----------------\n\n")
+//         //     log("value", value, "\nbestvalue", bestValue,"\nalpha",alpha,"\nbeta", beta)
+//         //     // console.log("X",((move.longestRow("X") * 10) + move.connectedPieces("X")) )
+//         //     // log("O",  ((move.longestRow("O") * 10) + move.connectedPieces("O")))
+//         //     log("total",  (move.longestRow("X") * 10) + move.connectedPieces("X") + move.blockEnemy("O"))
+//         }
+//         i++
+//     }
+//     // if (depth == DEPTH-1)
+//     exit()
+//     memo[key] = bestValue
+//     if (depth == DEPTH) {
+//         return bestMove
+//     }
+//     return bestValue;
+
+// }
+
+
+
+function minimax(board, depth, alpha, beta, maximizingPlayer) {
+  if (depth == 0 || board.isTerminalNode) {
+    return board.score;
+  }
+
+  let key = board.join(""); // Convert the board to a string to use as a hash key
+  if (memo.hasOwnProperty(key)) { // Check if we've evaluated this board before
+    return memo[key];
+  }
+
+  let bestValue = maximizingPlayer ? -Infinity : Infinity;
+  let validMoves = board.generateMoves();
+
+  while (!validMoves.isEmpty()) {
+    let move = validMoves.dequeue();
+    let newBoard = makeMove(board, move);
+
+    let value = minimax(newBoard, depth - 1, alpha, beta, !maximizingPlayer);
+    bestValue = maximizingPlayer ? Math.max(bestValue, value) : Math.min(bestValue, value);
+
+    if (maximizingPlayer) {
+      alpha = Math.max(alpha, bestValue);
+    } else {
+      beta = Math.min(beta, bestValue);
+    }
+
+    if (alpha >= beta) {
+      break;
+    }
+  }
+
+  memo[key] = bestValue; // Store the evaluation result for this board position
+  return bestValue;
 }
+
+
 class Tracker {
     constructor() {
         this.memory = 0
