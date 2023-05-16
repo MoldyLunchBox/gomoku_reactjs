@@ -2,7 +2,7 @@ const { exit } = require('process');
 const readline = require('readline');
 import { getPieces, Node } from './lib/Node'
 const BOARD_EMPTY_CHAR = '.'
-const BOARD_SIZE = 7
+
 const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
@@ -17,7 +17,11 @@ function createBoard(rows, cols) {
     }
     return array;
 }
-
+function printBoard(board) {
+    for (let i = 0; i < board.length; i++) {
+        log(board[i].join(' '))
+    }
+}
 
 function inputIsValid(newPiece, board) {
     const regex = /^\d+\s+\d+$/
@@ -222,26 +226,16 @@ function getPiece(board, x, y) {
   return piece;
 }
 
-function printBoard(board) {
-    for (let i = 0; i < BOARD_SIZE; i++) {
-        let line = ''
-        for(let j = 0; j < BOARD_SIZE; j++){
-            line += getPiece(board, i, j) + ' '
-        }
-        log(line)
-    }
-}
 
 async function main() {
-    // board = setPiece(board, 2, 3, 2)
     let board = 0
+    board = setPiece(board, 2, 3, 2)
     board = setPiece(board, 0, 0, 2)
-    log(getPiece(board, 0, 0))
 
-    log(getPiece(board, 0, 1))
-    // board = setPiece(board, 0, 1, 2)
-    // board = setPiece(board, 0, 2, 2)
-    printBoard(board)
+    board = setPiece(board, 0, 1, 2)
+    board = setPiece(board, 0, 2, 2)
+    printBoard
+    log(getPiece(board, 1, 3))
     let tracker = new Tracker()
     // const player1 = {
     //     name: 'player1',
