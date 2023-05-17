@@ -3,6 +3,8 @@ const readline = require('readline');
 import { getPieces, Node } from './lib/Node'
 const BOARD_EMPTY_CHAR = '.'
 const BOARD_SIZE = 7
+const AI = 0
+const HUMAN = 1
 const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
@@ -77,12 +79,10 @@ async function getPlayerMove(player, board, winner) {
                 resolve(answer);
             });
         });
-        if (inputIsValid(answer, board))
-            input = !input
+        // if (inputIsValid(answer, board))
+        input = !input
     }
     answer = { row: answer.split(" ")[0], col: answer.split(" ")[1] }
-    player.pieces.push(answer)
-    winner = winnerCheck(player)
     return answer
 }
 function preFillBoard(player, board) {
@@ -167,20 +167,21 @@ let memo = {};
 
 
 function minimax(board, depth, alpha, beta, maximizingPlayer) {
-  if (depth == 0 || board.isTerminalNode) {
+    // depth == 0 || board.isTerminalNode
+  if (depth == 0 ) {
     return board.score;
   }
 
-  let key = board.join(""); // Convert the board to a string to use as a hash key
-  if (memo.hasOwnProperty(key)) { // Check if we've evaluated this board before
-    return memo[key];
-  }
+//   let key = board.join(""); // Convert the board to a string to use as a hash key
+//   if (memo.hasOwnProperty(key)) { // Check if we've evaluated this board before
+//     return memo[key];
+//   }
 
   let bestValue = maximizingPlayer ? -Infinity : Infinity;
   let validMoves = board.generateMoves();
-
+let move = ""
   while (!validMoves.isEmpty()) {
-    let move = validMoves.dequeue();
+     move = validMoves.dequeue();
     let newBoard = makeMove(board, move);
 
     let value = minimax(newBoard, depth - 1, alpha, beta, !maximizingPlayer);
@@ -196,8 +197,9 @@ function minimax(board, depth, alpha, beta, maximizingPlayer) {
       break;
     }
   }
-
-  memo[key] = bestValue; // Store the evaluation result for this board position
+if (depth == 5)
+return move
+//   memo[key] = bestValue; // Store the evaluation result for this board position
   return bestValue;
 }
 
@@ -208,41 +210,180 @@ class Tracker {
         this.player = 0
     }
 }
-function setPiece(board, y, x, piece) {
-  var shift = (x * BOARD_SIZE) + y;
-  var mask = ~(3 << shift);
-  return (board & mask) | (piece << shift);
-}
 
 
-function getPiece(board, x, y) {
-  const shift = (x * BOARD_SIZE) + y;
-  const mask = 3 << shift;
-  const piece = (board & mask) >> shift;
-  return piece;
-}
+
+
+function setPiece(x, y, player, board) {
+    board[player][y] |= 1 << x;
+    return board
+  }
+  
+  // Function to get the state of the board at the given position
+  function getPiece(x, y, board) {
+    const player1 = board[0][y] & (1 << x);
+    const player2 = board[1][y] & (1 << x);
+    
+    if (player1 !== 0) {
+      return 1; // Player 1's stone
+    } else if (player2 !== 0) {
+      return 2; // Player 2's stone
+    } else {
+      return 0; // Empty position
+    }
+  }
 
 function printBoard(board) {
     for (let i = 0; i < BOARD_SIZE; i++) {
         let line = ''
         for(let j = 0; j < BOARD_SIZE; j++){
-            line += getPiece(board, i, j) + ' '
+            line += getPiece(i, j,board ) + ' '
         }
         log(line)
     }
 }
 
-async function main() {
-    // board = setPiece(board, 2, 3, 2)
-    let board = 0
-    board = setPiece(board, 0, 0, 2)
-    log(getPiece(board, 0, 0))
 
-    log(getPiece(board, 0, 1))
-    // board = setPiece(board, 0, 1, 2)
-    // board = setPiece(board, 0, 2, 2)
-    printBoard(board)
-    let tracker = new Tracker()
+
+function calculateScores(board) {
+  let maxHorizontal = 0;
+  let maxVertical = 0;
+  let maxDiagonal = 0;
+
+  // Calculate scores for horizontal, vertical, and diagonal lines
+  for (let i = 0; i < BOARD_SIZE; i++) {
+    let consecutiveHorizontal = 0;
+    let consecutiveVertical = 0;
+    let consecutiveDiagonal1 = 0; // Top-left to bottom-right diagonal
+    let consecutiveDiagonal2 = 0; // Top-right to bottom-left diagonal
+
+    for (let j = 0; j < BOARD_SIZE; j++) {
+      // Calculate horizontal score
+      consecutiveHorizontal = (getPiece(i, j, board) === 1) ? consecutiveHorizontal + 1 : 0;
+      maxHorizontal = Math.max(maxHorizontal, consecutiveHorizontal);
+
+      // Calculate vertical score (only in the first iteration)
+      if (j === 0) {
+        consecutiveVertical = (getPiece(j, i, board) === 1) ? 1 : 0;
+      } else {
+        consecutiveVertical = (getPiece(j, i, board) === 1) ? consecutiveVertical + 1 : 0;
+      }
+      maxVertical = Math.max(maxVertical, consecutiveVertical);
+
+      // Calculate diagonal score (top-left to bottom-right)
+      if (i + j < BOARD_SIZE) {
+        consecutiveDiagonal1 = (getPiece(j, i + j, board) === 1) ? consecutiveDiagonal1 + 1 : 0;
+        maxDiagonal = Math.max(maxDiagonal, consecutiveDiagonal1);
+      }
+
+      // Calculate diagonal score (top-right to bottom-left)
+      if (i - j >= 0) {
+        consecutiveDiagonal2 = (getPiece(j, i - j, board) === 1) ? consecutiveDiagonal2 + 1 : 0;
+        maxDiagonal = Math.max(maxDiagonal, consecutiveDiagonal2);
+      }
+    }
+  }
+
+  return {
+    maxHorizontal,
+    maxVertical,
+    maxDiagonal
+  };
+}
+
+function calculateScores2(board) {
+  let maxHorizontal = 0;
+  let maxVertical = 0;
+  let maxDiagonal = 0;
+
+  // Calculate scores for horizontal, vertical, and diagonal lines
+  for (let i = 0; i < BOARD_SIZE; i++) {
+    let consecutiveHorizontal = 0;
+    let consecutiveVertical = 0;
+    let consecutiveDiagonal = 0;
+
+    for (let j = 0; j < BOARD_SIZE; j++) {
+      // Calculate horizontal score
+      consecutiveHorizontal = (getPiece(i, j, board) === 1) ? consecutiveHorizontal + 1 : 0;
+      maxHorizontal = Math.max(maxHorizontal, consecutiveHorizontal);
+
+      // Calculate vertical score
+      consecutiveVertical = (getPiece(j, i, board) === 1) ? consecutiveVertical + 1 : 0;
+      maxVertical = Math.max(maxVertical, consecutiveVertical);
+
+      // Calculate diagonal score (top-left to bottom-right)
+      if (i + j < BOARD_SIZE) {
+        consecutiveDiagonal = (getPiece(j, i + j, board) === 1) ? consecutiveDiagonal + 1 : 0;
+        maxDiagonal = Math.max(maxDiagonal, consecutiveDiagonal);
+      }
+
+      // Calculate diagonal score (top-right to bottom-left)
+      if (i - j >= 0) {
+        consecutiveDiagonal = (getPiece(j, i - j, board) === 1) ? consecutiveDiagonal + 1 : 0;
+        maxDiagonal = Math.max(maxDiagonal, consecutiveDiagonal);
+      }
+    }
+  }
+
+  return {
+    maxHorizontal,
+    maxVertical,
+    maxDiagonal
+  };
+}
+
+
+
+async function main() {
+
+// Create a bit board for each player
+const board = [
+    new Array(19).fill(0), // Player 1's bit board
+    new Array(19).fill(0), // Player 2's bit board
+  ];
+  
+  // Function to set a stone at the given position for the specified player
+
+  
+  // Set a stone for Player 1 at position (2, 1)
+  const x = 2;
+  const y = 1;
+  const player = 0;
+  const player2 = 1;
+
+  setPiece(2, 1, AI, board);
+  setPiece(2, 2, AI, board);
+  setPiece(2, 3, AI, board);
+  setPiece(2, 4, AI, board);
+  setPiece(2, 5, AI, board);
+  setPiece(3, 1, AI, board);
+  setPiece(3, 4, AI, board);
+  
+  setPiece(4, 1, AI, board);
+  
+  setPiece(5, 1, AI, board);
+  log("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
+  log(board)
+  console.log(calculateScores2(board))
+  const node = new Node(board, AI, null)
+  const moves = node.generateMoves(AI)
+  while (!moves.isEmpty()){
+    const move = moves.dequeue()
+    printBoard(move.board)
+    log(move.score)
+    // log(calculateScores2(move))
+    log("\n")
+  }
+
+    // board = setPiece(board, 2, 3, 2)
+    // let board = 0
+    // board = setPiece(board, 0, 0, 2)
+    // log(getPiece(board, 0, 0))
+
+    // log(getPiece(board, 0, 1))
+    // // board = setPiece(board, 0, 1, 2)
+    // // board = setPiece(board, 0, 2, 2)
+    // let tracker = new Tracker()
     // const player1 = {
     //     name: 'player1',
     //     piece: 'O',
@@ -279,36 +420,34 @@ async function main() {
     // preFillBoard(player2, board)
     // preFillBoard(player1, board)
 
-    // const node = new Node(board, "X", null)
-    // const alpha = Number.NEGATIVE_INFINITY;
-    // const beta = Number.POSITIVE_INFINITY;
+    const alpha = Number.NEGATIVE_INFINITY;
+    const beta = Number.POSITIVE_INFINITY;
 
-    // const isMaximizingPlayer = true;
+    const isMaximizingPlayer = true;
 
-    // let userInput = ""
-    // let isPlayer1Turn = true
-    // var winner = false
-    // let time = 0
-    // while (true) {
-    //     printBoard(board)
-    //     log("time", time)
-    //     console.log(tracker.memory, tracker.player, tracker.memory + tracker.player)
-    //     const currentPlayer = isPlayer1Turn ? player1 : player2
-    //     if (currentPlayer.name == "player1") {
+    let userInput = ""
+    let isPlayer1Turn = true
+    var winner = false
+    let time = 0
+    const HumanTurn = true 
+    while (true) {
+        log("time", time)
+        // console.log(tracker.memory, tracker.player, tracker.memory + tracker.player)
+        if (HumanTurn) {
 
-    //         var newMove = await getPlayerMove(currentPlayer, board, winner)
-    //         board[newMove.row][newMove.col] = currentPlayer.piece
-    //     }
-    //     else {
+            var newMove = await getPlayerMove(board)
+            board[newMove.row][newMove.col] = currentPlayer.piece
+            setPiece(x: newMove.)
+        }
+        else {
+            const node = new Node(board, AI, null)
 
-    //         const node = new Node(board, "X", null)
-    //         const start = process.hrtime();
-    //         board = minimax(node, DEPTH, isMaximizingPlayer, alpha, beta, tracker).board;
-    //         currentPlayer.pieces = getPieces(board, "X")
-    //         time = process.hrtime(start);
-    //     }
-    //     log("---------------------")
-    //     isPlayer1Turn = !isPlayer1Turn
-    // }
+            const start = process.hrtime();
+            board = minimax(node, DEPTH, isMaximizingPlayer, alpha, beta);
+            time = process.hrtime(start);
+        }
+        log("---------------------")
+        HumanTurn = !HumanTurn
+    }
 }
 main()

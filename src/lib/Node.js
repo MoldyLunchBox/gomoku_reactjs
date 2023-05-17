@@ -1,6 +1,8 @@
 import PriorityQueue from "./priorityQueue"
-
-const BOARD_EMPTY_CHAR = '.'
+const BOARD_SIZE = 7
+const AI = 0
+const HUMAN = 1
+const BOARD_EMPTY_CHAR = 0
 // function directionCounter(currentPiece, direction, playerPieces, board) {
 //     let i = 0
 //     let moveExists = playerPieces.find(obj => obj.row === currentPiece.row && obj.col === currentPiece.col);
@@ -53,7 +55,7 @@ function followDirection(currentPiece, direction, playerPieces) {
     let pathElement = { row: currentPiece.row, col: currentPiece.col }
     while (i < 5 && moveExists) {
         pathElement = { row: pathElement.row + direction.y, col: pathElement.col + direction.x }
-   
+
         moveExists = playerPieces.find(obj => obj.row === pathElement.row && obj.col === pathElement.col);
         i++
     }
@@ -78,7 +80,7 @@ export function getPieces(piece, board) {
 function directionCounter(currentPiece, direction, playerPieces, board) {
     console.log(playerPieces, currentPiece)
     console.log("in")
-    
+
     let i = 0
     let winnableRow = 0
     let moveExists = playerPieces.find(obj => obj.row === currentPiece.row && obj.col === currentPiece.col);
@@ -136,92 +138,90 @@ function blockedPathCounter(currentPiece, direction, board, piece) {
     return false
 }
 
+function setPiece(x, y, player, board) {
+    board[player][y] |= 1 << x;
+    return board
+}
+
+// Function to get the state of the board at the given position
+function getPiece(x, y, board) {
+    const player1 = board[0][y] & (1 << x);
+    const player2 = board[1][y] & (1 << x);
+
+    if (player1 !== 0) {
+        return 1; // Player 1's stone
+    } else if (player2 !== 0) {
+        return 2; // Player 2's stone
+    } else {
+        return 0; // Empty position
+    }
+}
+
+
 export class Node {
     constructor(board, piece, newPiece) {
         this.board = board
         this.newPiece = newPiece
         this.piece = piece
-        if (newPiece != null)
-            this.score = (this.longestRow(piece, piece == "X" ? "O" : "X") * 10) 
-        // this.evalScore = this.evaluatePosition()
-        //  this.subPositions = this.subPosition()
+        // calculate longest row in every direction
+        this.scores = this.calculateScores(board)
+        this.score = this.scores.maxHorizontal + this.scores.maxVertical + this.scores.maxDiagonal
     }
-    generateMoves(piece) {
+    generateMoves(playerPiece) {
         let positions = new PriorityQueue()
-        for (let i = 0; i < this.board.length; i++) {
-            for (let j = 0; j < this.board.length; j++) {
-                if (this.board[i][j] === BOARD_EMPTY_CHAR) {
+        for (let i = 0; i < BOARD_SIZE; i++) {
+            for (let j = 0; j < BOARD_SIZE; j++) {
+                if (getPiece(i, j, this.board) === BOARD_EMPTY_CHAR) {
                     const newPosition = JSON.parse(JSON.stringify(this.board))
-                    newPosition[i][j] = piece
-                    // const newPlayer =  JSON.parse(JSON.stringify(this.player))
-                    // newPlayer.pieces.push({ row: i, col: j })
-                    console.log("yo")
-                    positions.enqueue(new Node(newPosition, piece, { row: i, col: j }))
+                    setPiece(i, j, playerPiece, newPosition)
+                    positions.enqueue(new Node(newPosition, playerPiece, { row: i, col: j }))
                 }
             }
         }
         return positions
     }
 
-    score(piece, enemyPiece) {
-        console.log("here", this.newPiece)
-        exit()
-        const playerPieces = getPieces(piece, this.board)
-        const enemyPieces = getPieces(enemyPiece, this.board)
-        let enemyBlocker = true
-        enemyPieces.push(this.newPiece)
-        const allMoves = [
-            { direction: "up", y: -1, x: 0 }, { direction: "down", y: 1, x: 0 }, { direction: "left", y: 0, x: -1 }, { direction: "right", y: 0, x: 1 },
-            { direction: "diagUL", y: -1, x: -1 }, { direction: "diagUR", y: -1, x: 1 }, { direction: "diagDL", y: 1, x: -1 }, { direction: "diagDR", y: 1, x: 1 }
-        ]
-        let maxRow = 0
-        let enemyMaxRow = 0
-        let connections = 0
+    calculateScores(board) {
+        let maxHorizontal = 0;
+        let maxVertical = 0;
+        let maxDiagonal = 0;
 
-        for (let i = 0; i < playerPieces.length; i++) {
-            const availableDirections = JSON.parse(JSON.stringify(allMoves));
-            while (availableDirections.length) {
-                const direction = availableDirections.shift()
-                const currentPiece = playerPieces[i]
-                if (pathWinnable(currentPiece, direction, this.board, piece)) {
-                    const piecesRow = directionCounter(currentPiece, direction, playerPieces, this.board)
-                    maxRow = piecesRow > maxRow ? piecesRow : maxRow
-                }
-                const ret = followDirection(currentPiece, direction, playerPieces)
-                if (enemyBlocker){
-                    const enemyRow = directionCounter(this.newPiece, direction, enemyPieces, this.board) - 1
-                    enemyMaxRow = enemyRow > enemyMaxRow ? enemyRow : enemyMaxRow
-                }
-                connections += ret
-            }
-            enemyBlocker = !enemyBlocker
-        }
-        if (enemyMaxRow == 3)
-            enemyMaxRow = 10
-        if (enemyMaxRow > 3)
-            enemyMaxRow = 1000
-        return maxRow * 10 + enemyMaxRow + connections
-    }
+        // Calculate scores for horizontal, vertical, and diagonal lines
+        for (let i = 0; i < BOARD_SIZE; i++) {
+            let consecutiveHorizontal = 0;
+            let consecutiveVertical = 0;
+            let consecutiveDiagonal = 0;
 
-    connectedPieces(piece) {
-        const playerPieces = getPieces(piece, this.board)
-        const allMoves = [
-            { direction: "up", y: -1, x: 0 }, { direction: "down", y: 1, x: 0 }, { direction: "left", y: 0, x: -1 }, { direction: "right", y: 0, x: 1 },
-            { direction: "diagUL", y: -1, x: -1 }, { direction: "diagUR", y: -1, x: 1 }, { direction: "diagDL", y: 1, x: -1 }, { direction: "diagDR", y: 1, x: 1 }
-        ]
-        let maxRow = 0
-        let connections = 0
-        for (let i = 0; i < playerPieces.length; i++) {
-            const availableDirections = JSON.parse(JSON.stringify(allMoves));
-            while (availableDirections.length) {
-                const direction = availableDirections.shift()
-                const currentPiece = playerPieces[i]
-                const ret = followDirection(currentPiece, direction, playerPieces)
-                connections += ret
+            for (let j = 0; j < BOARD_SIZE; j++) {
+                // Calculate horizontal score
+                consecutiveHorizontal = (getPiece(i, j, board) === 1) ? consecutiveHorizontal + 1 : 0;
+                maxHorizontal = Math.max(maxHorizontal, consecutiveHorizontal);
+
+                // Calculate vertical score
+                consecutiveVertical = (getPiece(j, i, board) === 1) ? consecutiveVertical + 1 : 0;
+                maxVertical = Math.max(maxVertical, consecutiveVertical);
+
+                // Calculate diagonal score (top-left to bottom-right)
+                if (i + j < BOARD_SIZE) {
+                    consecutiveDiagonal = (getPiece(j, i + j, board) === 1) ? consecutiveDiagonal + 1 : 0;
+                    maxDiagonal = Math.max(maxDiagonal, consecutiveDiagonal);
+                }
+
+                // Calculate diagonal score (top-right to bottom-left)
+                if (i - j >= 0) {
+                    consecutiveDiagonal = (getPiece(j, i - j, board) === 1) ? consecutiveDiagonal + 1 : 0;
+                    maxDiagonal = Math.max(maxDiagonal, consecutiveDiagonal);
+                }
             }
         }
-        return connections
+
+        return {
+            maxHorizontal,
+            maxVertical,
+            maxDiagonal
+        };
     }
+
 
     blockEnemy(enemyPiece) {
         const currentPiece = this.newPiece
