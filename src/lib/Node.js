@@ -1,7 +1,7 @@
 import PriorityQueue from "./priorityQueue"
 const BOARD_SIZE = 19
-const AI = 0
-const HUMAN = 1
+const AI = 1
+const HUMAN = 2
 const BOARD_EMPTY_CHAR = 0
 
 
@@ -26,13 +26,20 @@ function getPiece(x, y, board) {
 
 
 export class Node {
-    constructor(board, piece, newPiece) {
+    constructor(board, player, newPiece) {
         this.board = board
         this.newPiece = newPiece
-        this.piece = piece
+        this.player = player
         // calculate longest row in every direction
-        this.scores = this.calculateScores(board)
-        this.score = this.scores.maxHorizontal + this.scores.maxVertical + this.scores.maxDiagonal
+        if (newPiece) {
+            this.scores = this.calculateScores(board).row
+            this.score = (this.scores.self.h_length + this.scores.self.v_length + this.scores.self.dr_length + this.scores.self.dl_length + this.scores.self.connections) * Math.max(
+                this.scores.self.h_length,
+                this.scores.self.v_length,
+                this.scores.self.dr_length,
+                this.scores.self.dl_length
+            );
+        }
     }
     generateMoves() {
         let positions = new PriorityQueue()
@@ -40,8 +47,8 @@ export class Node {
             for (let j = 0; j < BOARD_SIZE; j++) {
                 if (getPiece(i, j, this.board) === BOARD_EMPTY_CHAR) {
                     const newPosition = JSON.parse(JSON.stringify(this.board))
-                    setPiece(i, j, this.piece, newPosition)
-                    positions.enqueue(new Node(newPosition, this.piece == AI ? HUMAN : AI, { row: i, col: j }))
+                    setPiece(i, j, this.player == AI ? 1 : 0, newPosition)
+                    positions.enqueue(new Node(newPosition, this.player == AI ? HUMAN : AI, { y: i, x: j }))
                 }
             }
         }
@@ -49,49 +56,154 @@ export class Node {
     }
 
     calculateScores(board) {
-        let maxHorizontal = 0;
-        let maxVertical = 0;
-        let maxDiagonal = 0;
-
-        // Calculate scores for horizontal, vertical, and diagonal lines
-        for (let i = 0; i < BOARD_SIZE; i++) {
-            let consecutiveHorizontal = 0;
-            let consecutiveVertical = 0;
-            let consecutiveDiagonalRight = 0;
-            let consecutiveDiagonalLeft = 0;
-            
-            let list = []
-            for (let j = 0; j < BOARD_SIZE; j++) {
-                // Calculate horizontal score
-                consecutiveHorizontal = (getPiece(i, j, board) === 1) ? consecutiveHorizontal + 1 : 0;
-                maxHorizontal = Math.max(maxHorizontal, consecutiveHorizontal);
-                // Calculate vertical score
-                consecutiveVertical = (getPiece(j, i, board) === 1) ? consecutiveVertical + 1 : 0;
-                maxVertical = Math.max(maxVertical, consecutiveVertical);
-
-                // Calculate diagonal score (top-left to bottom-right)
-                if (i + j < BOARD_SIZE) {
-                    consecutiveDiagonalRight = (getPiece(j, i + j, board) === 1) ? consecutiveDiagonalRight + 1 : 0;
-                    maxDiagonal = Math.max(maxDiagonal, consecutiveDiagonalRight);
-                }
-
-                // Calculate diagonal score (top-right to bottom-left)
-                if (i - j >= 0) {
-                    consecutiveDiagonalLeft = (getPiece(j, i - j, board) === 1) ? consecutiveDiagonalLeft + 1 : 0;
-                    maxDiagonal = Math.max(maxDiagonal, consecutiveDiagonalLeft);
-                }
+        let row = {
+            self: {
+                h_length: 0,
+                v_length: 0,
+                dr_length: 0,
+                dl_length: 0,
+                connections: 0
+            },
+            enemy: {
+                h_length: 0,
+                v_length: 0,
+                dr_length: 0,
+                dl_length: 0
             }
         }
+        let h_move = true;  // horizontal move available
+        let v_move = true;  // vertical move available
+        let dr_move = true; // diagonal right move available
+        let dl_move = true; // diagonal left move available
 
+
+        let block_h_move = true;  // horizontal move available
+        let block_v_move = true;  // vertical move available
+        let block_dr_move = true; // diagonal right move available
+        let block_dl_move = true; // diagonal left move available
+
+        let sign = 1
+        // Calculate scores for horizontal, vertical, and diagonal lines
+        let list = []
+        for (let j = 0; j < BOARD_SIZE; j++) {
+            // Calculate horizontal score
+            if (h_move || block_h_move) {
+                const piece = getPiece(this.newPiece.y, this.newPiece.x + j * sign, board)
+                if (h_move && piece === (this.player)) {
+                    if (j > 1 || j < -1)
+                        block_h_move = false
+                    row.self.h_length++
+                }
+                else
+                    h_move = false
+                if (block_h_move && piece === (this.player === AI ? HUMAN : AI))
+                    row.enemy.h_length++
+                else if (j > 1 || j < -1)
+                    block_h_move = false
+
+                    // if (this.newPiece.y == 10 && this.newPiece.x == 9 && piece){
+                    //     console.log("debug: ----------")
+                    //         console.log(piece, this.newPiece.y, this.newPiece.x + j * sign , piece === (this.player === AI ? HUMAN : AI))
+                    //     console.log("-----<")
+                    //     }
+
+            }
+
+
+            // Calculate vertical score for self
+            if (v_move && this.newPiece.y + j < BOARD_SIZE) {
+                const piece = getPiece(this.newPiece.y + j * sign, this.newPiece.x, board)
+                if (piece === (this.player))
+                    row.self.v_length++
+                else
+                    v_move = false
+                // calculate vertical row length for blocked enemy
+                // if (piece === this.player && (j > 0 || j < 0))
+
+            }
+
+            // Calculate diagonal score (top-left to bottom-right)
+
+            if (this.newPiece.y + j < BOARD_SIZE && this.newPiece.x + j * sign < BOARD_SIZE && dr_move) {
+                const piece = getPiece(this.newPiece.y + j * sign, this.newPiece.x + j * sign, board)
+                if (piece === (this.player))
+                    row.self.dr_length++
+                else
+                    dr_move = false
+            }
+      
+            // Calculate diagonal score (top-right to bottom-left)
+            if (this.newPiece.y - j >= 0 && dl_move) {
+                const piece = getPiece(this.newPiece.y + j * sign, this.newPiece.x - j * sign, board)
+                if (piece === (this.player))
+                    row.self.dl_length++
+                else
+                    dl_move = false
+            }
+
+            // when the loop reachs the end, it is then reversed once to calculate the opposite directions
+            if (j + 1 == BOARD_SIZE && sign == 1) {
+                sign *= -1
+                j = 0
+                h_move = true;
+                v_move = true;
+                dr_move = true;
+                dl_move = true;
+                block_h_move = true
+            }  
+        }
+        // if (this.newPiece.y == 10 && this.newPiece.x == 9){
+        //     console.log(row)
+        //     exit()
+        // }
+        row.self.connections = getPiece(this.newPiece.y, this.newPiece.x + 1, board) || getPiece(this.newPiece.y, this.newPiece.x - 1, board) || getPiece(this.newPiece.y - 1, this.newPiece.x, board) || getPiece(this.newPiece.y + 1, this.newPiece.x, board)
         return {
-            maxHorizontal,
-            maxVertical,
-            maxDiagonal
+            row
         };
     }
 
-    
 
+    // calculateScores(board) {
+    //     let maxHorizontal = 0;
+    //     let maxVertical = 0;
+    //     let maxDiagonal = 0;
+
+    //     // Calculate scores for horizontal, vertical, and diagonal lines
+    //     for (let i = 0; i < BOARD_SIZE; i++) {
+    //         let consecutiveHorizontal = 0;
+    //         let consecutiveVertical = 0;
+    //         let consecutiveDiagonalRight = 0;
+    //         let consecutiveDiagonalLeft = 0;
+
+    //         let list = []
+    //         for (let j = 0; j < BOARD_SIZE; j++) {
+    //             // Calculate horizontal score
+    //             consecutiveHorizontal = (getPiece(i, j, board) === 1) ? consecutiveHorizontal + 1 : 0;
+    //             maxHorizontal = Math.max(maxHorizontal, consecutiveHorizontal);
+    //             // Calculate vertical score
+    //             consecutiveVertical = (getPiece(j, i, board) === 1) ? consecutiveVertical + 1 : 0;
+    //             maxVertical = Math.max(maxVertical, consecutiveVertical);
+
+    //             // Calculate diagonal score (top-left to bottom-right)
+    //             if (i + j < BOARD_SIZE) {
+    //                 consecutiveDiagonalRight = (getPiece(j, i + j, board) === 1) ? consecutiveDiagonalRight + 1 : 0;
+    //                 maxDiagonal = Math.max(maxDiagonal, consecutiveDiagonalRight);
+    //             }
+
+    //             // Calculate diagonal score (top-right to bottom-left)
+    //             if (i - j >= 0) {
+    //                 consecutiveDiagonalLeft = (getPiece(j, i - j, board) === 1) ? consecutiveDiagonalLeft + 1 : 0;
+    //                 maxDiagonal = Math.max(maxDiagonal, consecutiveDiagonalLeft);
+    //             }
+    //         }
+    //     }
+
+    //     return {
+    //         maxHorizontal,
+    //         maxVertical,
+    //         maxDiagonal
+    //     };
+    // }
 
     blockEnemy(enemyPiece) {
         const currentPiece = this.newPiece
@@ -123,40 +235,39 @@ function calculateScores2(board) {
     let maxHorizontal = 0;
     let maxVertical = 0;
     let maxDiagonal = 0;
-  
+
     // Calculate scores for horizontal, vertical, and diagonal lines
     for (let i = 0; i < BOARD_SIZE; i++) {
-      let consecutiveHorizontal = 0;
-      let consecutiveVertical = 0;
-      let consecutiveDiagonal = 0;
-  
-      for (let j = 0; j < BOARD_SIZE; j++) {
-        // Calculate horizontal score
-        consecutiveHorizontal = (getPiece(i, j, board) === 1) ? consecutiveHorizontal + 1 : 0;
-        maxHorizontal = Math.max(maxHorizontal, consecutiveHorizontal);
-  
-        // Calculate vertical score
-        consecutiveVertical = (getPiece(j, i, board) === 1) ? consecutiveVertical + 1 : 0;
-        maxVertical = Math.max(maxVertical, consecutiveVertical);
-  
-        // Calculate diagonal score (top-left to bottom-right)
-        if (i + j < BOARD_SIZE) {
-          consecutiveDiagonal = (getPiece(j, i + j, board) === 1) ? consecutiveDiagonal + 1 : 0;
-          maxDiagonal = Math.max(maxDiagonal, consecutiveDiagonal);
+        let consecutiveHorizontal = 0;
+        let consecutiveVertical = 0;
+        let consecutiveDiagonal = 0;
+
+        for (let j = 0; j < BOARD_SIZE; j++) {
+            // Calculate horizontal score
+            consecutiveHorizontal = (getPiece(i, j, board) === 1) ? consecutiveHorizontal + 1 : 0;
+            maxHorizontal = Math.max(maxHorizontal, consecutiveHorizontal);
+
+            // Calculate vertical score
+            consecutiveVertical = (getPiece(j, i, board) === 1) ? consecutiveVertical + 1 : 0;
+            maxVertical = Math.max(maxVertical, consecutiveVertical);
+
+            // Calculate diagonal score (top-left to bottom-right)
+            if (i + j < BOARD_SIZE) {
+                consecutiveDiagonal = (getPiece(j, i + j, board) === 1) ? consecutiveDiagonal + 1 : 0;
+                maxDiagonal = Math.max(maxDiagonal, consecutiveDiagonal);
+            }
+
+            // Calculate diagonal score (top-right to bottom-left)
+            if (i - j >= 0) {
+                consecutiveDiagonal = (getPiece(j, i - j, board) === 1) ? consecutiveDiagonal + 1 : 0;
+                maxDiagonal = Math.max(maxDiagonal, consecutiveDiagonal);
+            }
         }
-  
-        // Calculate diagonal score (top-right to bottom-left)
-        if (i - j >= 0) {
-          consecutiveDiagonal = (getPiece(j, i - j, board) === 1) ? consecutiveDiagonal + 1 : 0;
-          maxDiagonal = Math.max(maxDiagonal, consecutiveDiagonal);
-        }
-      }
     }
-  
+
     return {
-      maxHorizontal,
-      maxVertical,
-      maxDiagonal
+        maxHorizontal,
+        maxVertical,
+        maxDiagonal
     };
-  }
-  
+}

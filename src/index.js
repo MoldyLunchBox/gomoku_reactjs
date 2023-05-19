@@ -3,8 +3,8 @@ const readline = require('readline');
 import { getPieces, Node } from './lib/Node'
 const BOARD_EMPTY_CHAR = '.'
 const BOARD_SIZE = 19
-const AI = 0
-const HUMAN = 1
+const AI = 1
+const HUMAN = 2
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
@@ -83,10 +83,15 @@ function minimax(board, depth, alpha, beta, maximizingPlayer) {
   //   }
 
   let bestValue = maximizingPlayer ? -Infinity : Infinity;
+  let i = 0
   let validMoves = board.generateMoves()
   let bestMove = ""
   while (!validMoves.isEmpty()) {
     let move = validMoves.dequeue();
+    // printBoard(move.board)
+    // log(move.scores)
+    // log("\n")
+    // log(board.score)
     let value = minimax(move, depth - 1, alpha, beta, !maximizingPlayer);
     if (depth == DEPTH)  // prior to return to main, we make sure we capture which move had the best score so we can return it {
       bestMove = value > bestValue ? move.board : bestMove
@@ -97,8 +102,10 @@ function minimax(board, depth, alpha, beta, maximizingPlayer) {
       beta = Math.min(beta, bestValue);
     if (alpha >= beta) 
       break;
-}
-  if (depth == DEPTH) 
+    // i++
+  }
+  // exit()
+  if (depth == DEPTH)
     return bestMove
   //   memo[key] = bestValue; // Store the evaluation result for this board position
   return bestValue;
@@ -135,6 +142,7 @@ function getPiece(x, y, board) {
 }
 
 function printBoard(board) {
+  console.log("\n")
   for (let i = 0; i < BOARD_SIZE; i++) {
     let line = ''
     for (let j = 0; j < BOARD_SIZE; j++) {
@@ -166,15 +174,14 @@ async function main() {
   const player = 0;
   const player2 = 1;
 
-  // setPiece(2, 3, AI, board);
-  // setPiece(2, 4, AI, board);
-  // setPiece(3, 1, AI, board);
-  // setPiece(3, 4, AI, board);
-  // setPiece(4, 1, AI, board);
 
-  
-  
-  // setPiece(5, 1, AI, board);
+
+
+
+
+  setPiece(10, 10, 1, board);
+  setPiece(10, 11, 1, board);
+
 
 
   const alpha = Number.NEGATIVE_INFINITY;
@@ -183,18 +190,17 @@ async function main() {
   const isMaximizingPlayer = true;
   let time = 0
   let HumanTurn = true
+  let node = new Node(board, 0, null)
   while (true) {
     log("time", time)
     // console.log(tracker.memory, tracker.players, tracker.memory + tracker.player)
     printBoard(board)
     if (HumanTurn) {
-
       var newMove = await getPlayerMove(board)
-      setPiece(newMove.row, newMove.col, HUMAN, board)
+      setPiece(newMove.row, newMove.col, 1, board)
+      node = new Node(board, HUMAN, { y: newMove.row, x: newMove.col })
     }
     else {
-      const node = new Node(board, AI, null)
-
       const start = process.hrtime();
       board = minimax(node, DEPTH, isMaximizingPlayer, alpha, beta);
       time = process.hrtime(start);
