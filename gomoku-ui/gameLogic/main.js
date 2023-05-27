@@ -1,14 +1,10 @@
-const { exit } = require('process');
-const readline = require('readline');
+
 import { getPieces, Node } from './lib/Node'
 const BOARD_EMPTY_CHAR = '.'
 const BOARD_SIZE = 19
 const AI = 1
 const HUMAN = 2
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
+
 const { log } = console
 const DEPTH = 5;
 
@@ -91,25 +87,26 @@ function minimax(board, depth, alpha, beta, maximizingPlayer) {
     // printBoard(move.board)
     // log(move.scores)
     // log("\n")
-    // log(move.score)
+    // log(board.score)
+    if (depth=== DEPTH){
+      printBoard(move.board)
+      log(move.score)
+    }
     let value = minimax(move, depth - 1, alpha, beta, !maximizingPlayer);
     if (depth == DEPTH)  // prior to return to main, we make sure we capture which move had the best score so we can return it {
-      bestMove = value > bestValue ? move : bestMove
+      bestMove = value > bestValue ? move.board : bestMove
     bestValue = maximizingPlayer ? Math.max(bestValue, value) : Math.min(bestValue, value);
-    if (maximizingPlayer) 
+    if (maximizingPlayer)
       alpha = Math.max(alpha, bestValue);
-    else 
+    else
       beta = Math.min(beta, bestValue);
-    if (alpha >= beta) 
+    if (alpha >= beta)
       break;
     // i++
   }
   // exit()
   if (depth == DEPTH)
-  {
-console.log(bestMove.scores)
-    return bestMove.board
-  }
+    return bestMove
   //   memo[key] = bestValue; // Store the evaluation result for this board position
   return bestValue;
 }
@@ -160,47 +157,9 @@ function printBoard(board) {
 
 
 
-async function main() {
+export async function counterMove(board) {
 
   // Create a bit board for each player
-  let board = [
-    new Array(19).fill(0), // Player 1's bit board
-    new Array(19).fill(0), // Player 2's bit board
-  ];
-
-  // Function to set a stone at the given position for the specified player
-
-
-  // Set a stone for Player 1 at position (2, 1)
-  const x = 2;
-  const y = 1;
-  const player = 0;
-  const player2 = 1;
-
-
-
-
-
-
-  // setPiece(2, 2, 1, board);
-  // setPiece(2, 3, 1, board);
-
-  // setPiece(1, 3, 0, board);
-  // setPiece(0, 3, 0, board);
-  // setPiece(0, 2, 0, board);
-  // setPiece(0, 1, 0, board);
-  // setPiece(1, 1, 0, board);
-  // setPiece(2, 1, 0, board);
-  // setPiece(2, 2, 0, board);
-  // setPiece(2, 3, 0, board);
-
-  // setPiece(4, 3, 1, board);
-  // setPiece(4, 0, 1, board);
-
-  // setPiece(3, 3, 1, board);
-  // setPiece(2, 2, 0, board);
-  // setPiece(4, 2, 1, board);
-  // setPiece(3, 1, 0, board);
 
 
 
@@ -208,25 +167,7 @@ async function main() {
   const beta = Number.POSITIVE_INFINITY;
 
   const isMaximizingPlayer = true;
-  let time = 0
-  let HumanTurn = true
-  let node = new Node(board, 0, null)
-  while (true) {
-    log("time", time)
-    // console.log(tracker.memory, tracker.players, tracker.memory + tracker.player)
-    printBoard(board)
-    if (HumanTurn) {
-      var newMove = await getPlayerMove(board)
-      setPiece(newMove.row, newMove.col, 1, board)
-      node = new Node(board, HUMAN, { y: newMove.row, x: newMove.col })
-    }
-    else {
-      const start = process.hrtime();
-      board = minimax(node, DEPTH, isMaximizingPlayer, alpha, beta);
-      time = process.hrtime(start);
-    }
-    log("---------------------")
-    HumanTurn = !HumanTurn
-  }
+  const node = new Node(board, HUMAN, null)
+  const ret = minimax(node, DEPTH, isMaximizingPlayer, alpha, beta);
+  return ret
 }
-main()

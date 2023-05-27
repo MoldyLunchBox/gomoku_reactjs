@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.square {
+  width: 100%;
+  padding-bottom: 100%;
+  /* background-color: #008080; */
+  overflow: hidden;
+  position: relative;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+
+}
+
+.grid-cols3{
+  grid-template-columns: repeat(19, minmax(0, 1fr));
+}
+
+.square h2 {
+  position: absolute;
+  font-size: 2rem;
+  line-height: 1;
+  text-align: center;
+}
