@@ -1,3 +1,5 @@
+const AI = 1
+const HUMAN = 2
 /**
  * prototyping the queue system to manage a list of nodes where 
  * every new element is put in correct position to make 
@@ -20,7 +22,7 @@ export default class PriorityQueue {
         //      this.items.sort((a,b) => a.score -b.score) 2814 19914 22728
         let contain = false;
         for (let i = 0; i < this.items.length; i++) {
-            if (this.items[i].score < elem.score){
+            if (this.items[i].score < elem.score && elem.player == AI || this.items[i].score > elem.score && elem.player == HUMAN){
                 this.items.splice(i, 0, elem);
                 contain = true;
                 break;

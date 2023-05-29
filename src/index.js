@@ -10,7 +10,7 @@ const rl = readline.createInterface({
   output: process.stdout
 });
 const { log } = console
-const DEPTH = 5;
+const DEPTH = 3;
 
 function createBoard(rows, cols) {
   const array = new Array(rows);
@@ -71,10 +71,13 @@ let memo = {};
 
 
 
-function minimax(board, depth, alpha, beta, maximizingPlayer) {
+function minimax(board, depth, alpha, beta, maximizingPlayer, tracker) {
+
   // depth == 0 || board.isTerminalNode
-  if (depth == 0) {
-    return board.score;
+  if (depth == 0 || board.score >= 500000) {
+   
+    // console.log(maximizingPlayer)
+    return Math.pow(board.score , (depth ? depth : 1));
   }
 
   //   let key = board.join(""); // Convert the board to a string to use as a hash key
@@ -85,29 +88,38 @@ function minimax(board, depth, alpha, beta, maximizingPlayer) {
   let bestValue = maximizingPlayer ? -Infinity : Infinity;
   let i = 0
   let validMoves = board.generateMoves()
-  let bestMove = ""
-  while (!validMoves.isEmpty()) {
+  var bestMove = ""
+  while (!validMoves.isEmpty() && i < 9 ) {
+    tracker.memory++
+    // console.log(depth)
     let move = validMoves.dequeue();
-    // printBoard(move.board)
-    // log(move.scores)
-    // log("\n")
-    // log(move.score)
-    let value = minimax(move, depth - 1, alpha, beta, !maximizingPlayer);
-    if (depth == DEPTH)  // prior to return to main, we make sure we capture which move had the best score so we can return it {
-      bestMove = value > bestValue ? move : bestMove
-    bestValue = maximizingPlayer ? Math.max(bestValue, value) : Math.min(bestValue, value);
-    if (maximizingPlayer) 
-      alpha = Math.max(alpha, bestValue);
-    else 
-      beta = Math.min(beta, bestValue);
-    if (alpha >= beta) 
-      break;
-    // i++
+    // if (depth == 1 && move.newPiece.y == 7 && move.newPiece.x == 13 ){
+    printBoard(move.board)
+    log(move.scores)
+    log("\n")
+    log(move.score)
+    // let value = minimax(move, depth - 1, alpha, beta, !maximizingPlayer, tracker);
+    // if (depth == DEPTH)
+    // log(value)
+    // if (depth == DEPTH)  // we make sure we capture the move with  the best score so we can return it 
+    //   bestMove = value > bestValue ? move : bestMove
+    // bestValue = maximizingPlayer ? Math.max(bestValue, value) : Math.min(bestValue, value);
+    // if (maximizingPlayer)
+    //   alpha = Math.max(alpha, bestValue);
+    // else
+    //   beta = Math.min(beta, bestValue);
+    // if (alpha >= beta) {
+    //   // console.log(" alpha", alpha, "beta", beta, "maximizing", maximizingPlayer, "bestValue", bestValue)
+    //   break;
+    // }
+    i++
   }
   // exit()
-  if (depth == DEPTH)
-  {
-console.log(bestMove.scores)
+  if (depth == DEPTH) {
+    console.log(bestMove.scores)
+    console.log(bestValue)
+    console.log(bestMove.score)
+
     return bestMove.board
   }
   //   memo[key] = bestValue; // Store the evaluation result for this board position
@@ -156,7 +168,26 @@ function printBoard(board) {
 }
 
 
+function calcBoundries(board) {
+  let topLeft = {y: BOARD_SIZE, x: BOARD_SIZE}
+  let bottomRight = {y:0, x:0}
 
+  for (let i = 0; i < BOARD_SIZE; i++) {
+    for (let j = 0; j < BOARD_SIZE; j++) {
+      if (getPiece(i, j, board)){
+        topLeft.y = Math.min(i , topLeft.y)
+        topLeft.x = Math.min(j , topLeft.x)
+        bottomRight.y = Math.max(i , bottomRight.y)
+        bottomRight.x = Math.max(j , bottomRight.x)
+      }
+    }
+  }
+  topLeft.y = Math.max(0 , topLeft.y - 3)
+  topLeft.x = Math.max(0 , topLeft.x - 3)
+  bottomRight.y = Math.min(BOARD_SIZE , bottomRight.y + 3)
+  bottomRight.x = Math.min(BOARD_SIZE , bottomRight.x + 3)
+  return {topLeft, bottomRight}
+}
 
 
 
@@ -178,7 +209,17 @@ async function main() {
   const player2 = 1;
 
 
+  setPiece(10, 10, 1, board)
+  setPiece(11, 10, 0, board)
+  setPiece(9, 11, 1, board)
+  setPiece(10, 9, 0, board)
+  // setPiece(8, 12, 1, board)
 
+  // setPiece(4, 0, 0, board)
+  // setPiece(4, 2, 1, board)
+  // setPiece(5, 0, 0, board)
+  // setPiece(5, 1, 1, board)
+  // setPiece(6, 0, 0, board)
 
 
 
@@ -202,7 +243,7 @@ async function main() {
   // setPiece(4, 2, 1, board);
   // setPiece(3, 1, 0, board);
 
-
+  let tracker = new Tracker()
 
   const alpha = Number.NEGATIVE_INFINITY;
   const beta = Number.POSITIVE_INFINITY;
@@ -210,19 +251,22 @@ async function main() {
   const isMaximizingPlayer = true;
   let time = 0
   let HumanTurn = true
-  let node = new Node(board, 0, null)
+  let node = null
   while (true) {
     log("time", time)
-    // console.log(tracker.memory, tracker.players, tracker.memory + tracker.player)
+    log(board)
     printBoard(board)
+    console.log("memory", tracker.memory)
     if (HumanTurn) {
       var newMove = await getPlayerMove(board)
       setPiece(newMove.row, newMove.col, 1, board)
-      node = new Node(board, HUMAN, { y: newMove.row, x: newMove.col })
+      log("aaaaaaaa", newMove)
+      console.log("oooooooooooooo", calcBoundries(board))
+      node = new Node(board, HUMAN, { y: newMove.row, x: newMove.col }, calcBoundries(board) )
     }
     else {
       const start = process.hrtime();
-      board = minimax(node, DEPTH, isMaximizingPlayer, alpha, beta);
+      board = minimax(node, DEPTH, alpha, beta, isMaximizingPlayer, tracker);
       time = process.hrtime(start);
     }
     log("---------------------")

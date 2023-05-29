@@ -6,7 +6,7 @@ const AI = 1
 const HUMAN = 2
 
 const { log } = console
-const DEPTH = 5;
+const DEPTH = 2;
 
 function createBoard(rows, cols) {
   const array = new Array(rows);
@@ -69,7 +69,7 @@ let memo = {};
 
 function minimax(board, depth, alpha, beta, maximizingPlayer) {
   // depth == 0 || board.isTerminalNode
-  if (depth == 0) {
+  if (depth == 0 ) {
     return board.score;
   }
 
@@ -88,10 +88,12 @@ function minimax(board, depth, alpha, beta, maximizingPlayer) {
     // log(move.scores)
     // log("\n")
     // log(board.score)
-    if (depth=== DEPTH){
-      printBoard(move.board)
-      log(move.score)
-    }
+   if (depth == 1 ){
+    printBoard(move.board)
+    log(move.scores)
+    log("\n")
+    log(board.score)
+   }
     let value = minimax(move, depth - 1, alpha, beta, !maximizingPlayer);
     if (depth == DEPTH)  // prior to return to main, we make sure we capture which move had the best score so we can return it {
       bestMove = value > bestValue ? move.board : bestMove
@@ -152,6 +154,26 @@ function printBoard(board) {
   }
 }
 
+function calcBoundries(board) {
+  let topLeft = {y: BOARD_SIZE, x: BOARD_SIZE}
+  let bottomRight = {y:0, x:0}
+
+  for (let i = 0; i < BOARD_SIZE; i++) {
+    for (let j = 0; j < BOARD_SIZE; j++) {
+      if (getPiece(i, j, board)){
+        topLeft.y = Math.min(i , topLeft.y)
+        topLeft.x = Math.min(j , topLeft.x)
+        bottomRight.y = Math.max(i , bottomRight.y)
+        bottomRight.x = Math.max(j , bottomRight.x)
+      }
+    }
+  }
+  topLeft.y = Math.max(0 , topLeft.y - 3)
+  topLeft.x = Math.max(0 , topLeft.x - 3)
+  bottomRight.y = Math.min(BOARD_SIZE , bottomRight.y + 3)
+  bottomRight.x = Math.min(BOARD_SIZE , bottomRight.x + 3)
+  return {topLeft,bottomRight}
+}
 
 
 
@@ -167,7 +189,8 @@ export async function counterMove(board) {
   const beta = Number.POSITIVE_INFINITY;
 
   const isMaximizingPlayer = true;
-  const node = new Node(board, HUMAN, null)
-  const ret = minimax(node, DEPTH, isMaximizingPlayer, alpha, beta);
+  const node = new Node(board, HUMAN, null, calcBoundries(board))
+  console.log(calcBoundries(board) )
+  const ret = minimax(node, DEPTH, alpha, beta, isMaximizingPlayer );
   return ret
 }

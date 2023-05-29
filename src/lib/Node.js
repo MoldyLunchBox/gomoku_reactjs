@@ -38,26 +38,29 @@ function getPiece(x, y, board) {
 
 
 export class Node {
-    constructor(board, player, newPiece) {
+    constructor(board, player, newPiece, boundries) {
         this.board = board
         this.newPiece = newPiece
         this.player = player
-
+        this.boundries = boundries
+        // console.log(boundries)
         // calculate longest row in every direction
         if (newPiece) {
             this.scores = this.calculateScores(board)
             this.score = this.heuristics()
 
         }
+        else
+        this.score = 0
     }
     generateMoves() {
         let positions = new PriorityQueue()
-        for (let i = 0; i < BOARD_SIZE; i++) {
-            for (let j = 0; j < BOARD_SIZE; j++) {
+        for (let i = this.boundries.topLeft.y ; i < this.boundries.bottomRight.y; i++) {
+            for (let j = this.boundries.topLeft.x; j < this.boundries.bottomRight.x; j++) {
                 if (getPiece(i, j, this.board) === EMPTY_PIECE) {
                     const newPosition = JSON.parse(JSON.stringify(this.board))
                     setPiece(i, j, this.player == AI ? 1 : 0, newPosition)
-                    positions.enqueue(new Node(newPosition, this.player == AI ? HUMAN : AI, { y: i, x: j }))
+                    positions.enqueue(new Node(newPosition, this.player == AI ? HUMAN : AI, { y: i, x: j }, this.boundries))
                 }
             }
         }
@@ -66,16 +69,16 @@ export class Node {
 
     calculateScores(board) {
 
-        let enemy_connection = {
-            left: getPiece(this.newPiece.y, this.newPiece.x - 1, board) == (this.player === AI ? HUMAN : AI), // left
-            right: getPiece(this.newPiece.y, this.newPiece.x + 1, board) == (this.player === AI ? HUMAN : AI), // right
-            down: getPiece(this.newPiece.y + 1, this.newPiece.x, board) == (this.player === AI ? HUMAN : AI), // down
-            up: getPiece(this.newPiece.y - 1, this.newPiece.x, board) == (this.player === AI ? HUMAN : AI), // up
-            dr_up: getPiece(this.newPiece.y - 1, this.newPiece.x + 1, board) == (this.player === AI ? HUMAN : AI), //  diag right up
-            dr_down: getPiece(this.newPiece.y + 1, this.newPiece.x + 1, board) == (this.player === AI ? HUMAN : AI), // diag right down
-            dl_up: getPiece(this.newPiece.y - 1, this.newPiece.x - 1, board) == (this.player === AI ? HUMAN : AI), //  diag left up
-            dl_down: getPiece(this.newPiece.y + 1, this.newPiece.x - 1, board) == (this.player === AI ? HUMAN : AI), // diag left down
-        }
+        // let enemy_connection = {
+        //     left: getPiece(this.newPiece.y, this.newPiece.x - 1, board) == (this.player === AI ? HUMAN : AI), // left
+        //     right: getPiece(this.newPiece.y, this.newPiece.x + 1, board) == (this.player === AI ? HUMAN : AI), // right
+        //     down: getPiece(this.newPiece.y + 1, this.newPiece.x, board) == (this.player === AI ? HUMAN : AI), // down
+        //     up: getPiece(this.newPiece.y - 1, this.newPiece.x, board) == (this.player === AI ? HUMAN : AI), // up
+        //     dr_up: getPiece(this.newPiece.y - 1, this.newPiece.x + 1, board) == (this.player === AI ? HUMAN : AI), //  diag right up
+        //     dr_down: getPiece(this.newPiece.y + 1, this.newPiece.x + 1, board) == (this.player === AI ? HUMAN : AI), // diag right down
+        //     dl_up: getPiece(this.newPiece.y - 1, this.newPiece.x - 1, board) == (this.player === AI ? HUMAN : AI), //  diag left up
+        //     dl_down: getPiece(this.newPiece.y + 1, this.newPiece.x - 1, board) == (this.player === AI ? HUMAN : AI), // diag left down
+        // }
 
         // player.connections = getPiece(this.newPiece.y, this.newPiece.x + 1, board) || getPiece(this.newPiece.y, this.newPiece.x - 1, board) || getPiece(this.newPiece.y - 1, this.newPiece.x, board) || getPiece(this.newPiece.y + 1, this.newPiece.x, board)
 
@@ -394,22 +397,22 @@ export class Node {
         const enemy = this.scores.enemy
 
         // analysing and asigning score to player pieces
-        const p_h = gomokuShapeScore(player.player.h_length, (player.ends.left != HUMAN ? 1 : 0) + (player.ends.right != HUMAN ? 1 : 0), true, this.newPiece)
-        const p_v = gomokuShapeScore(player.player.v_length, (player.ends.bottom != HUMAN ? 1 : 0) + (player.ends.top != HUMAN ? 1 : 0), true, this.newPiece)
-        const p_dl = gomokuShapeScore(player.player.dl_length, (player.ends.dbl != HUMAN ? 1 : 0) + (player.ends.dtr != HUMAN ? 1 : 0), true, this.newPiece)
-        const p_dr = gomokuShapeScore(player.player.dr_length, (player.ends.dbr != HUMAN ? 1 : 0) + (player.ends.dtl != HUMAN ? 1 : 0), true, this.newPiece)
+        const p_h = gomokuShapeScore(player.player.h_length, (player.ends.left != HUMAN ? 1 : 0) + (player.ends.right != HUMAN ? 1 : 0), this.player ==! AI, this.newPiece)
+        const p_v = gomokuShapeScore(player.player.v_length, (player.ends.bottom != HUMAN ? 1 : 0) + (player.ends.top != HUMAN ? 1 : 0), this.player ==! AI, this.newPiece)
+        const p_dl = gomokuShapeScore(player.player.dl_length, (player.ends.dbl != HUMAN ? 1 : 0) + (player.ends.dtr != HUMAN ? 1 : 0), this.player ==! AI, this.newPiece)
+        const p_dr = gomokuShapeScore(player.player.dr_length, (player.ends.dbr != HUMAN ? 1 : 0) + (player.ends.dtl != HUMAN ? 1 : 0), this.player ==! AI, this.newPiece)
 
         // analysing and asigning score to enemy pieces
-        const e_h = gomokuShapeScore(enemy.enemy.h_length, (enemy.ends.left != AI ? 1 : 0) + (enemy.ends.right != AI ? 1 : 0), false, this.newPiece)
-        const e_v = gomokuShapeScore(enemy.enemy.v_length, (enemy.ends.bottom != AI ? 1 : 0) + (enemy.ends.top != AI ? 1 : 0), false, this.newPiece)
-        const e_dl = gomokuShapeScore(enemy.enemy.dl_length, (enemy.ends.dbl != AI ? 1 : 0) + (enemy.ends.dtr != AI ? 1 : 0), false, this.newPiece)
-        const e_dr = gomokuShapeScore(enemy.enemy.dr_length, (enemy.ends.dbr != AI ? 1 : 0) + (enemy.ends.dtl != AI ? 1 : 0), false, this.newPiece)
-if (this.newPiece.y == 1 && this.newPiece.x == 2){
+        const e_h = gomokuShapeScore(enemy.enemy.h_length, (enemy.ends.left != AI ? 1 : 0) + (enemy.ends.right != AI ? 1 : 0), this.player ==! AI, this.newPiece)
+        const e_v = gomokuShapeScore(enemy.enemy.v_length, (enemy.ends.bottom != AI ? 1 : 0) + (enemy.ends.top != AI ? 1 : 0), this.player ==! AI, this.newPiece)
+        const e_dl = gomokuShapeScore(enemy.enemy.dl_length, (enemy.ends.dbl != AI ? 1 : 0) + (enemy.ends.dtr != AI ? 1 : 0), this.player ==! AI, this.newPiece)
+        const e_dr = gomokuShapeScore(enemy.enemy.dr_length, (enemy.ends.dbr != AI ? 1 : 0) + (enemy.ends.dtl != AI ? 1 : 0), this.player ==! AI, this.newPiece)
+// if (this.newPiece.y == 1 && this.newPiece.x == 2){
 
-    log(this.newPiece , " :")
-    log(p_h, p_v, p_dl, p_dr, e_h, e_v, e_dl, e_dr)
+//     log(this.newPiece , " :")
+//     log(p_h, p_v, p_dl, p_dr, e_h, e_v, e_dl, e_dr)
 
-}
+// }
 return (p_h + p_v + p_dl + p_dr + e_h + e_v + e_dl + e_dr)
     }
  
@@ -417,20 +420,22 @@ return (p_h + p_v + p_dl + p_dr + e_h + e_v + e_dl + e_dr)
 
 
 function gomokuShapeScore(consecutive, openEnds, currentTurn, newPiece) {
-    if (newPiece.y == 1 && newPiece.x == 2)
-        log(consecutive, openEnds)
+    // if (newPiece.y == 1 && newPiece.x == 2)
+    //     log(consecutive, openEnds)
 	if (openEnds == 0 && consecutive < 5 || consecutive == 0)
 		return 0;
 	switch (consecutive) {
+        case 5:
+			return 400000* 2;
 		case 4:
 			switch (openEnds) {
 				case 1:
 					if (currentTurn)
-						return 100000000;
-					return 50;
+						return 20000;
+					return 500000;
 				case 2:
 					if (currentTurn)
-						return 100000000;
+						return 20000;
 					return 500000;
 			}
 		case 3:
@@ -442,7 +447,7 @@ function gomokuShapeScore(consecutive, openEnds, currentTurn, newPiece) {
 				case 2:
 					if (currentTurn)
 						return 10000;
-					return 20000;
+					return 20010;
 			}
 		case 2:
 			switch (openEnds) {
