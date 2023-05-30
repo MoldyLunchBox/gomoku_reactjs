@@ -23,6 +23,8 @@ function setPiece(x: number, y: number, board: any[][])  {
   return board
 }
 
+
+
 export default function Home() {
   const size = 19;
   const initialBoard = [

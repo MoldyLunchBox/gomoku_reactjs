@@ -21,7 +21,7 @@ function getPiece(x: number, y: number, board: any[][]) {
 }
 
 function setPiece(x: number, y: number, board: any[][])  {
-  board[1][x] |= 1 << y;
+  board[1][y] |= 1 << x;
   return board
 }
 
@@ -29,9 +29,9 @@ export const Grid = ({ board, setBoard }: Props) => {
   const   handleClick = async(e: any) => {
     const i = parseInt(`${e.target.id / 19}`)
     const j = e.target.id % 19
+    
     const newboard = Array.from(setPiece(i, j, board))
     setBoard(newboard)
-    log(board)
     // console.log(i, j, e.target.id, e.target.id / 19)
     const ok = await counterMove(board)
     setBoard(ok)
@@ -43,8 +43,8 @@ export const Grid = ({ board, setBoard }: Props) => {
         <div className='grid grid-cols3 gap-1 h-full w-full ' >
           {board[1].map((_, i) => (
             board[1].map((_, j) => (
-              <div id={`${(i * 19) + j}`} className={`square cursor-pointer ${getPiece(j, i, board) == 2 ? 'bg-red-400' : getPiece(j, i, board) == 1 ? 'bg-blue' : 'bg-[#008080]'}`} onClick={handleClick} key={(i*19) + j}>
-                <h2 className={`top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2  pointer-events-none`}>{getPiece(j, i, board)}</h2>
+              <div id={`${(i * 19) + j}`} className={`square cursor-pointer ${getPiece(i, j, board) == 2 ? 'bg-red-400' : getPiece(i, j, board) == 1 ? 'bg-blue' : 'bg-[#008080]'}`} onClick={handleClick} key={(i*19) + j}>
+                <h2 className={`top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2  pointer-events-none`}>{getPiece(i, j, board)}</h2>
               </div>
             ))
           ))

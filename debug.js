@@ -642,7 +642,7 @@ function minimax(board, depth, alpha, beta, maximizingPlayer, tracker) {
     if (depth == DEPTH)  // we make sure we capture the move with  the best score so we can return it 
       bestMove = value > bestValue ? move : bestMove
     bestValue = maximizingPlayer ? Math.max(bestValue, value) : Math.min(bestValue, value);
-    if (bestValue != 10006.5 && bestValue != 10007)
+    if (depth == 3)
     console.log("ok")
     if (maximizingPlayer)
       alpha = Math.max(alpha, bestValue);

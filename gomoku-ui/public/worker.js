@@ -1,18 +1,11 @@
-const { exit } = require('process');
-const readline = require('readline');
-const BOARD_EMPTY_CHAR = '.'
+
+
 const BOARD_SIZE = 19
 const AI = 1
 const HUMAN = 2
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
+
 const { log } = console
-const DEPTH = 3;
-
-
-
+const DEPTH = 4;
 
 class PriorityQueue {
     constructor() {
@@ -475,14 +468,14 @@ class Node {
         const e_v = gomokuShapeScore(enemy.enemy.v_length, (enemy.ends.bottom != AI ? 1 : 0) + (enemy.ends.top != AI ? 1 : 0), true, this.newPiece)
         const e_dl = gomokuShapeScore(enemy.enemy.dl_length, (enemy.ends.dbl != AI ? 1 : 0) + (enemy.ends.dtr != AI ? 1 : 0), true, this.newPiece)
         const e_dr = gomokuShapeScore(enemy.enemy.dr_length, (enemy.ends.dbr != AI ? 1 : 0) + (enemy.ends.dtl != AI ? 1 : 0), true, this.newPiece)
-        const score = p_h + p_v + p_dl + p_dr + e_h + e_v + e_dl + e_dr + (this.parent ? this.parent.score : 0)
-        if (this.depth == DEPTH && score > 60){
-          printBoard(this.board)
-            log(this.newPiece , " :")
-            log(p_h, p_v, p_dl, p_dr, e_h, e_v, e_dl, e_dr)
-            log("score", score)
-        }
+        // if (this.newPiece.y == 1 && this.newPiece.x == 2){
+
+        //     log(this.newPiece , " :")
+        //     log(p_h, p_v, p_dl, p_dr, e_h, e_v, e_dl, e_dr)
+
+        // }
         this.debug = { p_h, p_v, p_dl, p_dr, e_h, e_v, e_dl, e_dr }
+        const score = p_h + p_v + p_dl + p_dr + e_h + e_v + e_dl + e_dr + (this.parent ? this.parent.score : 0)
         return (score)
     }
     validateScores(){
@@ -509,11 +502,11 @@ function gomokuShapeScore(consecutive, openEnds, currentTurn, newPiece) {
             switch (openEnds) {
                 case 1:
                     if (currentTurn)
-                        return 20000;
+                        return 20900;
                     return 500000;
                 case 2:
                     if (currentTurn)
-                        return 20000;
+                        return 20900;
                     return 500000;
             }
         case 3:
@@ -595,26 +588,31 @@ function minimax(board, depth, alpha, beta, maximizingPlayer) {
     let i = 0
     let validMoves = board.generateMoves()
     let bestMove = ""
-    while (!validMoves.isEmpty() && i < 9) {
+    while (!validMoves.isEmpty()) {
         let move = validMoves.dequeue();
-        printBoard(move.board)
-        log(move.debug)
-    
-        log(move.score)
-         log("\n")
-        // let value = minimax(move, depth - 1, alpha, beta, !maximizingPlayer);
-        // if (depth == DEPTH)  // prior to return to main, we make sure we capture which move had the best score so we can return it {
-        //     bestMove = value > bestValue ? move : bestMove
-        // bestValue = maximizingPlayer ? Math.max(bestValue, value) : Math.min(bestValue, value);
-        // if (maximizingPlayer)
-        //     alpha = Math.max(alpha, bestValue);
-        // else
-        //     beta = Math.min(beta, bestValue);
-        // if (alpha >= beta)
-        //     break;
-        i++
+        // printBoard(move.board)
+        // log(move.scores)
+        // log("\n")
+        // log(board.score)
+        // if (depth == 1) {
+        //   printBoard(move.board)
+        //   log(move.scores)
+        //   log("\n")
+        //   log(board.score)
+        // }
+        let value = minimax(move, depth - 1, alpha, beta, !maximizingPlayer);
+        if (depth == DEPTH)  // prior to return to main, we make sure we capture which move had the best score so we can return it {
+            bestMove = value > bestValue ? move : bestMove
+        bestValue = maximizingPlayer ? Math.max(bestValue, value) : Math.min(bestValue, value);
+        if (maximizingPlayer)
+            alpha = Math.max(alpha, bestValue);
+        else
+            beta = Math.min(beta, bestValue);
+        if (alpha >= beta)
+            break;
+        // i++
     }
-    exit()
+    // exit()
     if (depth == DEPTH) {
         printBoard(bestMove.board)
         console.log("these are the scores:")
@@ -625,87 +623,24 @@ function minimax(board, depth, alpha, beta, maximizingPlayer) {
     return bestValue;
 }
 
-
-
-async function getPlayerMove(board) {
-  let input = false
-  var answer = {}
-  while (!input) {
-
-    answer = await new Promise((resolve) => {
-      rl.question(`Place your piece: `, (answer) => {
-        resolve(answer);
-      });
-    });
-    // if (inputIsValid(answer, board))
-    input = !input
-  }
-  answer = { row: answer.split(" ")[0], col: answer.split(" ")[1] }
-  return answer
-}
-function preFillBoard(player, board) {
-  for (let i = 0; i < player.pieces.length; i++) {
-    board[player.pieces[i].row][player.pieces[i].col] = player.piece
-  }
-}
+// Handle messages from the main thread
+self.onmessage = function (event) {
+    // Create a bit board for each player
 
 
 
-async function main() {
+    var alpha = Number.NEGATIVE_INFINITY;
+    var beta = Number.POSITIVE_INFINITY;
 
-  // Create a bit board for each player
-  let board = [
-    new Array(19).fill(0), // Player 1's bit board
-    new Array(19).fill(0), // Player 2's bit board
-  ];
+    var isMaximizingPlayer = true;
+    // const ret = minimax(node, DEPTH, alpha, beta, isMaximizingPlayer );
 
-  // Function to set a stone at the given position for the specified player
+    const { board } = event.data;
+    var node = new Node(board, HUMAN, null, calcBoundries(board), null, DEPTH + 1)
 
+    // Call the minimax function
+    const result = minimax(node, DEPTH, alpha, beta, isMaximizingPlayer);
 
-  // Set a stone for Player 1 at position (2, 1)
-  const x = 2;
-  const y = 1;
-  const player = 0;
-  const player2 = 1;
-
-
-  setPiece(5, 7,  0, board)
-  setPiece(4, 6,  1, board)
-  setPiece(3, 5,  1, board)
-  setPiece(2, 4,  1, board)
-  setPiece(1, 3,  1, board)
-  setPiece(3, 4,  0, board)
-  setPiece(4, 3,  0, board)
-  setPiece(2, 5,  0, board)
-
-  let tracker = new Tracker()
-
-  const alpha = Number.NEGATIVE_INFINITY;
-  const beta = Number.POSITIVE_INFINITY;
-
-  const isMaximizingPlayer = true;
-  let time = 0
-  let HumanTurn = true
-  let node = null
-  while (true) {
-    log("time", time)
-    log(board)
-    printBoard(board)
-    console.log("memory", tracker.memory)
-    if (HumanTurn) {
-      var newMove = await getPlayerMove(board)
-      setPiece(newMove.row, newMove.col, 1, board)
-      log("aaaaaaaa", newMove)
-      console.log("oooooooooooooo", calcBoundries(board))
-      node = new Node(board, HUMAN, { y: newMove.row, x: newMove.col }, calcBoundries(board), null, DEPTH + 1)
-    }
-    else {
-      const start = process.hrtime();
-      board = minimax(node, DEPTH, alpha, beta, isMaximizingPlayer, tracker);
-      time = process.hrtime(start);
-    }
-    log("---------------------")
-    HumanTurn = !HumanTurn
-  }
-}
-main()
+    // Send the result back to the main thread
+    self.postMessage(result);
+};
