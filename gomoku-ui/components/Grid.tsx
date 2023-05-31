@@ -33,7 +33,11 @@ export const Grid = ({ board, setBoard }: Props) => {
     const newboard = Array.from(setPiece(i, j, board))
     setBoard(newboard)
     // console.log(i, j, e.target.id, e.target.id / 19)
+    const start = performance.now();
     const ok = await counterMove(board)
+    const end = performance.now();
+    const elapsed = end - start;
+    console.log("time:", elapsed.toFixed(2))
     setBoard(ok)
   }
   return (

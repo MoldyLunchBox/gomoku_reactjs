@@ -496,7 +496,6 @@ class Node {
 
 }
 
-
 function gomokuShapeScore(consecutive, openEnds, currentTurn, newPiece) {
     // if (newPiece.y == 1 && newPiece.x == 2)
     //     log(consecutive, openEnds)
@@ -509,11 +508,11 @@ function gomokuShapeScore(consecutive, openEnds, currentTurn, newPiece) {
             switch (openEnds) {
                 case 1:
                     if (currentTurn)
-                        return 20000;
+                        return 20900;
                     return 500000;
                 case 2:
                     if (currentTurn)
-                        return 20000;
+                        return 20900;
                     return 500000;
             }
         case 3:

@@ -478,67 +478,69 @@ class Node {
         const score = p_h + p_v + p_dl + p_dr + e_h + e_v + e_dl + e_dr + (this.parent ? this.parent.score : 0)
         return (score)
     }
-    validateScores(){
+    validateScores() {
         this.scores.player.player.h_length = this.scores.player.availableSpace.h_length + this.scores.player.player.h_length >= 5 ? this.scores.player.player.h_length : 0
         this.scores.player.player.v_length = this.scores.player.availableSpace.v_length + this.scores.player.player.v_length >= 5 ? this.scores.player.player.v_length : 0
-    
+
         this.scores.player.player.dl_length = this.scores.player.availableSpace.dl_length + this.scores.player.player.dl_length >= 5 ? this.scores.player.player.dl_length : 0
         this.scores.player.player.dr_length = this.scores.player.availableSpace.dr_length + this.scores.player.player.dr_length >= 5 ? this.scores.player.player.dr_length : 0
-    
+
     }
 
 }
 
-
 function gomokuShapeScore(consecutive, openEnds, currentTurn, newPiece) {
-    // if (newPiece.y == 1 && newPiece.x == 2)
-    //     log(consecutive, openEnds)
     if (openEnds == 0 && consecutive < 5 || consecutive == 0)
         return 0;
+
     switch (consecutive) {
         case 5:
-            return 400000 * 2;
+            return 500000; // Winning move has high value
+
         case 4:
             switch (openEnds) {
                 case 1:
                     if (currentTurn)
-                        return 20900;
-                    return 500000;
+                        return 500000; // Prioritize blocking enemy's open 4
+                    return 20000; // Value player's open 4
                 case 2:
                     if (currentTurn)
-                        return 20900;
-                    return 500000;
+                        return 500000; // Prioritize blocking enemy's open 4
+                    return 20000; // Value player's open 4
             }
+
         case 3:
             switch (openEnds) {
                 case 1:
                     if (currentTurn)
-                        return 7;
-                    return 5;
+                        return 7; // Value player's open 3
+                    return 5; // Prioritize blocking enemy's open 3
                 case 2:
                     if (currentTurn)
-                        return 400000;
-                    return 20010;
+                        return 400000; // Value player's double open 3
+                    return 20000; // Prioritize blocking enemy's double open 3
             }
+
         case 2:
             switch (openEnds) {
                 case 1:
-                    return 2;
+                    return 2; // Value player's open 2
                 case 2:
-                    return 5;
+                    return 5; // Value player's double open 2
             }
+
         case 1:
             switch (openEnds) {
                 case 1:
-                    return 0.5;
+                    return 0.5; // Value player's open 1
                 case 2:
-                    return 1;
+                    return 1; // Value player's double open 1
             }
+
         default:
-            return 200000000;
+            return 200000000; // High value for other cases
     }
 }
-
 
 
 class Tracker {
@@ -572,75 +574,81 @@ function calcBoundries(board) {
     return { topLeft, bottomRight }
 }
 
-
-
-function minimax(board, depth, alpha, beta, maximizingPlayer) {
-    // depth == 0 || board.isTerminalNode
-    if (depth == 0) {
-        return board.score;
+const cache = new Map();
+var start = performance.now()
+function minimax(board, depth, alpha, beta, maximizingPlayer, tracker) {
+    // Generate a unique key for the board position
+    const key = board.board.toString();
+    
+    const end = performance.now();
+    const elapsed = end - start
+    // Check if the value is already cached
+    if (cache.has(key)) {
+        tracker.memory++
+        return cache.get(key);
     }
-    //   let key = board.join(""); // Convert the board to a string to use as a hash key
-    //   if (memo.hasOwnProperty(key)) { // Check if we've evaluated this board before
-    //     return memo[key];
-    //   }
 
-    let bestValue = maximizingPlayer ? -Infinity : Infinity;
-    let i = 0
-    let validMoves = board.generateMoves()
-    let bestMove = ""
+    // Check if reached the maximum depth 
+    if (elapsed > 500) {
+        tracker.player = tracker.player > depth ? tracker.player : depth
+        cache.set(key, board.score); // Cache the computed score
+        return board.score; // Return the score of the board. (!) because i only calculate the score of the  currently placed piece, i add up the parent score to the current one, 
+        // that way the final depth score is actually the score of all the moves taken
+    }
+
+    let bestValue = maximizingPlayer ? -Infinity : Infinity; // Initialize the best value
+    let validMoves = board.generateMoves(); // Get valid moves for the current board
+    let bestMove = ""; // Initialize the best move to be returned at the end of the start depth
     while (!validMoves.isEmpty()) {
-        let move = validMoves.dequeue();
-        // printBoard(move.board)
-        // log(move.scores)
-        // log("\n")
-        // log(board.score)
-        // if (depth == 1) {
-        //   printBoard(move.board)
-        //   log(move.scores)
-        //   log("\n")
-        //   log(board.score)
-        // }
-        let value = minimax(move, depth - 1, alpha, beta, !maximizingPlayer);
-        if (depth == DEPTH)  // prior to return to main, we make sure we capture which move had the best score so we can return it {
-            bestMove = value > bestValue ? move : bestMove
-        bestValue = maximizingPlayer ? Math.max(bestValue, value) : Math.min(bestValue, value);
-        if (maximizingPlayer)
-            alpha = Math.max(alpha, bestValue);
-        else
-            beta = Math.min(beta, bestValue);
-        if (alpha >= beta)
-            break;
-        // i++
+        let move = validMoves.dequeue(); // Get the next move from the valid moves
+        let value = minimax(move, depth - 1, alpha, beta, !maximizingPlayer, tracker); // Recursively call minimax on the child nodes
+        if (depth === DEPTH) {
+            // If it's the first depth level, update the best move
+            bestMove = value > bestValue ? move : bestMove;
+        }
+        bestValue = maximizingPlayer ? Math.max(bestValue, value) : Math.min(bestValue, value); // Update the best value
+
+        if (maximizingPlayer) {
+            alpha = Math.max(alpha, bestValue); // Update alpha value for pruning
+        } else {
+            beta = Math.min(beta, bestValue); // Update beta value for pruning
+        }
+
+        if (alpha >= beta) {
+            break; // Perform alpha-beta pruning, this is only effective if the nodes are sorted correctly, from high to low for the maximizingPlayer (ai), and low to high for the HUMAN
+        }
     }
-    // exit()
-    if (depth == DEPTH) {
-        printBoard(bestMove.board)
-        console.log("these are the scores:")
-        console.log(bestMove.scores)
-        return bestMove.board
+
+    if (depth === DEPTH) {
+        cache.set(key, bestMove.score); // Cache the computed best move
+        return bestMove.board; // If it's the first depth level, return the board of the best move
     }
-    //   memo[key] = bestValue; // Store the evaluation result for this board position
-    return bestValue;
+    cache.set(key, bestValue); // Cache the computed best value
+    return bestValue; // Return the best value at the current depth
 }
+
 
 // Handle messages from the main thread
 self.onmessage = function (event) {
     // Create a bit board for each player
 
-
+    var tracker = new Tracker
 
     var alpha = Number.NEGATIVE_INFINITY;
     var beta = Number.POSITIVE_INFINITY;
 
     var isMaximizingPlayer = true;
     // const ret = minimax(node, DEPTH, alpha, beta, isMaximizingPlayer );
-
+    // start =  performance.now()
     const { board } = event.data;
     var node = new Node(board, HUMAN, null, calcBoundries(board), null, DEPTH + 1)
 
     // Call the minimax function
-    const result = minimax(node, DEPTH, alpha, beta, isMaximizingPlayer);
-
+    console.clear()
+    const result = minimax(node, DEPTH, alpha, beta, isMaximizingPlayer, tracker);
+    console.log("cach hits", tracker.memory)
+    console.log("ittirations", tracker.player)
+    cache.clear();
     // Send the result back to the main thread
     self.postMessage(result);
 };

@@ -67,53 +67,6 @@ let memo = {};
 
 
 
-function minimax(board, depth, alpha, beta, maximizingPlayer) {
-  // depth == 0 || board.isTerminalNode
-  if (depth == 0) {
-    return board.score;
-  }
-
-  //   let key = board.join(""); // Convert the board to a string to use as a hash key
-  //   if (memo.hasOwnProperty(key)) { // Check if we've evaluated this board before
-  //     return memo[key];
-  //   }
-
-  let bestValue = maximizingPlayer ? -Infinity : Infinity;
-  let i = 0
-  let validMoves = board.generateMoves()
-  let bestMove = ""
-  while (!validMoves.isEmpty()) {
-    let move = validMoves.dequeue();
-    // printBoard(move.board)
-    // log(move.scores)
-    // log("\n")
-    // log(board.score)
-    if (depth == 1) {
-      printBoard(move.board)
-      log(move.scores)
-      log("\n")
-      log(board.score)
-    }
-    let value = minimax(move, depth - 1, alpha, beta, !maximizingPlayer);
-    if (depth == DEPTH)  // prior to return to main, we make sure we capture which move had the best score so we can return it {
-      bestMove = value > bestValue ? move.board : bestMove
-    bestValue = maximizingPlayer ? Math.max(bestValue, value) : Math.min(bestValue, value);
-    if (maximizingPlayer)
-      alpha = Math.max(alpha, bestValue);
-    else
-      beta = Math.min(beta, bestValue);
-    if (alpha >= beta)
-      break;
-    // i++
-  }
-  // exit()
-  if (depth == DEPTH)
-    return bestMove
-  //   memo[key] = bestValue; // Store the evaluation result for this board position
-  return bestValue;
-}
-
-
 class Tracker {
   constructor() {
     this.memory = 0
@@ -175,30 +128,23 @@ function calcBoundries(board) {
   return { topLeft, bottomRight }
 }
 
-
-
 export async function counterMove(board) {
-
-
-  // const ret = minimax(node, DEPTH, alpha, beta, isMaximizingPlayer );
+  const start = performance.now();
   return new Promise((resolve, reject) => {
-
     const worker = new Worker('./worker.js');
-    log("here")
+    log("here");
     // Handle messages from the worker
-    worker.onmessage = function (event) {
+    worker.onmessage = function(event) {
       const result = event.data;
-      log("message from worker", result)
-      // Process the result from the worker
-      // ...
-      resolve(result)
-      worker.terminate
+      log("message from worker", result);
+      resolve(result);
+      worker.terminate();
     };
 
     // Call the worker with the task
     worker.postMessage({
-      board: board
+      board: board,
+      start: start
     });
-
-  })
+  });
 }
