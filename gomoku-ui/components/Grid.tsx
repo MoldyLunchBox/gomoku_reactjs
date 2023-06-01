@@ -1,6 +1,6 @@
 "use client"; // This is a client component 👈🏽
 import React from 'react'
-import {counterMove} from "../gameLogic/main"
+import { counterMove } from "../gameLogic/main"
 
 const { log } = console
 interface Props {
@@ -20,16 +20,16 @@ function getPiece(x: number, y: number, board: any[][]) {
   }
 }
 
-function setPiece(x: number, y: number, board: any[][])  {
+function setPiece(x: number, y: number, board: any[][]) {
   board[1][y] |= 1 << x;
   return board
 }
 
 export const Grid = ({ board, setBoard }: Props) => {
-  const   handleClick = async(e: any) => {
+  const handleClick = async (e: any) => {
     const i = parseInt(`${e.target.id / 19}`)
     const j = e.target.id % 19
-    
+
     const newboard = Array.from(setPiece(i, j, board))
     setBoard(newboard)
     // console.log(i, j, e.target.id, e.target.id / 19)
@@ -42,13 +42,16 @@ export const Grid = ({ board, setBoard }: Props) => {
   }
   return (
     <div className="flex justify-center items-center">
-      <div className="w-[961px]">
+      <div className="w-[600px]">
 
-        <div className='grid grid-cols3 gap-1 h-full w-full ' >
+        <div className='grid grid-cols3 h-full w-full bg-[#008080]' >
           {board[1].map((_, i) => (
             board[1].map((_, j) => (
-              <div id={`${(i * 19) + j}`} className={`square cursor-pointer ${getPiece(i, j, board) == 2 ? 'bg-red-400' : getPiece(i, j, board) == 1 ? 'bg-blue' : 'bg-[#008080]'}`} onClick={handleClick} key={(i*19) + j}>
-                <h2 className={`top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2  pointer-events-none`}>{getPiece(i, j, board)}</h2>
+              <div id={`${(i * 19) + j}`} className={`square cursor-pointer z-10 }`} onClick={handleClick} key={(i * 19) + j}>
+                <div className='horizontal-line top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-0'></div>
+                <div className='vertical-line top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-0'></div>
+                <div className={`w-full h-full absolute pointer-events-none ${getPiece(i, j, board) == 2 ? 'bg-red-400 rounded-full' : getPiece(i, j, board) == 1 ? 'bg-black rounded-full' : ''}`}></div>
+                {/* <h2 className={`top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2  pointer-events-none`}>{getPiece(i, j, board)}</h2> */}
               </div>
             ))
           ))

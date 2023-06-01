@@ -14,7 +14,22 @@
 
 }
 
-.grid-cols3{
+.horizontal-line {
+  height: 2px;
+  width: 100%;
+  position: absolute;
+  background-color: brown;
+
+}
+
+.vertical-line {
+  width: 2px;
+  height: 100%;
+  position: absolute;
+  background-color: brown;
+}
+
+.grid-cols3 {
   grid-template-columns: repeat(19, minmax(0, 1fr));
 }
 
@@ -24,3 +39,53 @@
   line-height: 1;
   text-align: center;
 }
+
+body {
+  height: 100%;
+}
+
+.my-text {
+  margin: 1em auto 4em auto;
+  max-width: 760px;
+  padding: 1em;
+}
+
+.result {
+  font-size:1.4em;
+  text-align:center;
+  color:navy
+ }
+ .score {
+  margin:1em 0 .32em 0
+ }
+.result span {
+  display:inline-block;
+  text-align:center
+ }
+
+ .delimiter {
+  width:2rem
+ }
+ .scorePlayer1,
+ .scorePlayer2,
+ .delimiter {
+  font-size:1.8em
+ }
+ .scorePlayer1,
+ .scorePlayer2,
+ .namePlayer1,
+ .namePlayer2 {
+  width:5rem
+ }
+ .namePlayer1,
+ .namePlayer2 {
+  font-size:1.4rem
+ }
+ .scorePlayer1,
+ .namePlayer1 {
+  color:royalblue
+ }
+ .scorePlayer2,
+ .namePlayer2 {
+  color:tomato
+ }

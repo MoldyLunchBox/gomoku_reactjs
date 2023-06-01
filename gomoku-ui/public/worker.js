@@ -441,7 +441,7 @@ class Node {
                     if (sign == 1)
                         streak.enemy.v_right++
                     else
-                        streak.enemy.v_top++
+                        streak.enemy.v_left++
 
                 }
                 else
@@ -685,8 +685,7 @@ class Tracker {
 }
 
 function deletPiece(x, y, board) {
-    board[1][y] |= 0 << x;
-    printBoard(board)
+    board[1][y] &= ~(1 << x);
     return board
 }
 

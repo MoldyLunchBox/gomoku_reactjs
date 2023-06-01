@@ -3,8 +3,10 @@ import Image from 'next/image'
 import styles from './page.module.css'
 import { Grid } from '@/components/Grid'
 
-import {useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { get } from 'http';
+import Article from '@/components/Article';
+import Panel from '@/components/Panel';
 function getPiece(x: number, y: number, board: any[][]) {
   const player1 = board[0][y] & (1 << x);
   const player2 = board[1][y] & (1 << x);
@@ -18,7 +20,7 @@ function getPiece(x: number, y: number, board: any[][]) {
   }
 }
 
-function setPiece(x: number, y: number, board: any[][])  {
+function setPiece(x: number, y: number, board: any[][]) {
   board[1][x] |= 1 << y;
   return board
 }
@@ -32,7 +34,7 @@ export default function Home() {
     new Array(19).fill(0), // Player 2's bit board
   ];
   const [board, setBoard] = useState(initialBoard);
-  useEffect ( ()=>{
+  useEffect(() => {
     // console.clear()
     // for (let i = 0; i < 19; i++){
     //   for (let j = 0; j < 19; j++){
@@ -43,13 +45,24 @@ export default function Home() {
     //       console.log(`setPiece(${i}, ${j}, 1, board)`)
     //   }
     // }
-    setPiece(6, 2, board) 
-    setPiece(6, 3, board)
+    // setPiece(6, 2, board) 
+    // setPiece(6, 3, board)
   },)
 
   return (
-    <main >
-      <Grid board={board} setBoard={setBoard} />
+    <main className='  h-full bg-gradient-to-b from-cyan-500 to-blue-500'>
+      <div className='container mx-auto px-4'>
+
+      <div className="flex flex-row flex-wrap justify-center bg-black">
+        <div className="basis-2/3">
+          <Grid board={board} setBoard={setBoard} />
+        </div>
+        <div className=" bg-white basis-1/3">
+          <Panel />
+        </div>
+      </div>
+      <Article />
+      </div>
     </main>
   )
 }
