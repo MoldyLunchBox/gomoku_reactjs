@@ -5,6 +5,9 @@ import { counterMove } from "../gameLogic/main"
 const { log } = console
 interface Props {
   board: any[][],
+  turn: number,
+  aiPlayer: boolean,
+  setTurn:  React.Dispatch<React.SetStateAction<number>>
   setBoard: React.Dispatch<React.SetStateAction<any[][]>>
 }
 function getPiece(x: number, y: number, board: any[][]) {
@@ -20,25 +23,28 @@ function getPiece(x: number, y: number, board: any[][]) {
   }
 }
 
-function setPiece(x: number, y: number, board: any[][]) {
-  board[1][y] |= 1 << x;
+function setPiece(x: number, y: number, player: number, board: any[][]) {
+  board[player][y] |= 1 << x;
   return board
 }
 
-export const Grid = ({ board, setBoard }: Props) => {
+export const Grid = ({ board,turn, aiPlayer, setTurn, setBoard }: Props) => {
   const handleClick = async (e: any) => {
     const i = parseInt(`${e.target.id / 19}`)
     const j = e.target.id % 19
 
-    const newboard = Array.from(setPiece(i, j, board))
-    setBoard(newboard)
+    const newboard = Array.from(setPiece(i, j,turn, board))
     // console.log(i, j, e.target.id, e.target.id / 19)
     const start = performance.now();
-    const ok = await counterMove(board)
+    const {newBoard, valid} = await counterMove(newboard, turn, aiPlayer, {y:i, x:j})
+    // setBoard(newboard)
+    const newTurn = turn ? 0 : 1
+    setTurn(newTurn)
     const end = performance.now();
     const elapsed = end - start;
     console.log("time:", elapsed.toFixed(2))
-    setBoard(ok)
+    if (valid)
+    setBoard(newBoard)
   }
   return (
     <div className="flex justify-center items-center">

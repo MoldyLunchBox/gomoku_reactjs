@@ -784,7 +784,7 @@ function minimax(board, depth, alpha, beta, maximizingPlayer, tracker) {
 // Handle messages from the main thread
 self.onmessage = function (event) {
     // Create a bit board for each player
-
+    const result = null
     var tracker = new Tracker
 
     var alpha = Number.NEGATIVE_INFINITY;
@@ -793,14 +793,27 @@ self.onmessage = function (event) {
     var isMaximizingPlayer = true;
     // const ret = minimax(node, DEPTH, alpha, beta, isMaximizingPlayer );
     // start =  performance.now()
-    const { board } = event.data;
-    var node = new Node(board, HUMAN, null, calcBoundries(board), null, DEPTH + 1)
-
+    const { board, turn, aiPlayer, newPiece } = event.data;
+    
     // Call the minimax function
     // console.clear()
-    const result = minimax(node, DEPTH, alpha, beta, isMaximizingPlayer, tracker);
-    console.log("cach hits", tracker.memory)
-    console.log("ittirations", tracker.player)
+    if (aiPlayer){
+
+        const node = new Node(board, HUMAN, null, calcBoundries(board), null, DEPTH + 1)
+        result = minimax(node, DEPTH, alpha, beta, isMaximizingPlayer, tracker);
+        console.log("cach hits", tracker.memory)
+        console.log("ittirations", tracker.player)
+        result =  {newBoard: result, valid: true}
+
+    }
+    else{
+        const node = new Node(board, turn, newPiece, calcBoundries(board), null, DEPTH + 1)
+        if (node.freeThrees == 2)
+            result =  {newBoard: null, valid: false}
+        else
+            result =  {newBoard: node.board, valid: true}
+
+    }
     cache.clear();
     // Send the result back to the main thread
     self.postMessage(result);

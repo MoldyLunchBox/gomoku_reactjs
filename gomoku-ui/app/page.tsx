@@ -34,6 +34,8 @@ export default function Home() {
     new Array(19).fill(0), // Player 2's bit board
   ];
   const [board, setBoard] = useState(initialBoard);
+  const [turn, setTurn] = useState(0)
+  const [aiPlayer, setAiPlayer] = useState(false)
   useEffect(() => {
     // console.clear()
     // for (let i = 0; i < 19; i++){
@@ -55,7 +57,7 @@ export default function Home() {
 
       <div className="flex flex-row flex-wrap justify-center bg-black">
         <div className="basis-2/3">
-          <Grid board={board} setBoard={setBoard} />
+          <Grid board={board} turn={turn} aiPlayer={aiPlayer} setTurn={setTurn} setBoard={setBoard} />
         </div>
         <div className=" bg-white basis-1/3">
           <Panel />

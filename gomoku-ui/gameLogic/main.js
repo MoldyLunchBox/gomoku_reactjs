@@ -128,7 +128,7 @@ function calcBoundries(board) {
   return { topLeft, bottomRight }
 }
 
-export async function counterMove(board) {
+export async function counterMove(board, turn, aiPlayer, newPiece) {
   log("sent board:", board)
   const start = performance.now();
   return new Promise((resolve, reject) => {
@@ -145,7 +145,9 @@ export async function counterMove(board) {
     // Call the worker with the task
     worker.postMessage({
       board: board,
-      start: start
+      turn: turn,
+      aiPlayer: aiPlayer,
+      newPiece: newPiece
     });
   });
 }
