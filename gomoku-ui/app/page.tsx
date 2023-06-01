@@ -32,19 +32,20 @@ export default function Home() {
     new Array(19).fill(0), // Player 2's bit board
   ];
   const [board, setBoard] = useState(initialBoard);
-  // useEffect ( ()=>{
-  //   console.clear()
-  //   for (let i = 0; i < 19; i++){
-  //     for (let j = 0; j < 19; j++){
-  //       const piece = getPiece(j,i,board)
-  //       if (piece == 1)
-  //         console.log(`setPiece(${i}, ${j}, 0, board)`)
-  //         else     if (piece == 2)
-  //         console.log(`setPiece(${i}, ${j}, 1, board)`)
-  //     }
-  //   }
-
-  // },[board])
+  useEffect ( ()=>{
+    // console.clear()
+    // for (let i = 0; i < 19; i++){
+    //   for (let j = 0; j < 19; j++){
+    //     const piece = getPiece(j,i,board)
+    //     // if (piece == 1)
+    //     //   console.log(`setPiece(${i}, ${j}, 0, board)`)
+    //         if (piece == 2)
+    //       console.log(`setPiece(${i}, ${j}, 1, board)`)
+    //   }
+    // }
+    setPiece(6, 2, board) 
+    setPiece(6, 3, board)
+  },)
 
   return (
     <main >

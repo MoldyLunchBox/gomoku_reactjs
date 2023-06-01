@@ -129,6 +129,7 @@ function calcBoundries(board) {
 }
 
 export async function counterMove(board) {
+  log("sent board:", board)
   const start = performance.now();
   return new Promise((resolve, reject) => {
     const worker = new Worker('./worker.js');
