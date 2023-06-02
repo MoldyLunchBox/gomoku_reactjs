@@ -107,17 +107,10 @@ class Node {
         this.freethrees = 0
         this.depth = depth
         this.fling = null
-        // console.log(boundries)
-        // calculate longest row in every direction
         if (newPiece) {
             this.scores = this.calculateScores(board)
             this.validateScores()
-            // printBoard(this.board)
-            // log(this.scores)
-            // log(this)
-            // exit()
             this.score = this.heuristics() * this.depth
-
         }
         else
             this.score = 0
@@ -170,18 +163,18 @@ class Node {
                 h_length: 1,  // length: 1 of the full row, (right + left)
                 h_move: true,  // state of the row   true for available, false for ended
 
-                v_right: 1,
-                v_left: 0,
+                v_bottom: 1,
+                v_top: 0,
                 v_length: 1,
                 v_move: true,
 
-                dr_right: 1,
-                dr_left: 0,
+                drb: 1,
+                dlt: 0,
                 dr_length: 1,
                 dr_move: true,
 
-                dl_right: 1,
-                dl_left: 0,
+                dlb: 1,
+                drt: 0,
                 dl_length: 1,
                 dl_move: true,
                 connections: 0
@@ -213,7 +206,13 @@ class Node {
         let piece = ""
 
 
+        // if (this.newPiece.y == 6 && this.newPiece.x == 7) {
 
+        //     console.log("debug: ----------")
+        //     console.log( streak.player.dr_move , piece , this.player, sign)
+        //     console.log("-----<")
+        //     printBoard(this.board)
+        // }
 
         for (let j = 1; j < RANGE; j++) {
 
@@ -240,12 +239,6 @@ class Node {
                 }
 
             }
-            // if (this.newPiece.y == 0 && this.newPiece.x == 0) {
-
-            //     console.log("debug: ----------")
-            //     console.log( streak.player.h_length, sign, this.newPiece.x , (j * sign), piece)
-            //     console.log("-----<")
-            // }
 
 
             // Calculate vertical score for player
@@ -254,9 +247,9 @@ class Node {
             if (this.newPiece.y + (j * sign) < BOARD_SIZE && this.newPiece.y + (j * sign) >= 0) {  // range condition
                 if (streak.player.v_move && piece === (this.player)) {
                     if (sign == 1)
-                        streak.player.v_right++
+                        streak.player.v_bottom++
                     else
-                        streak.player.v_left++
+                        streak.player.v_top++
                 }
                 else
                     streak.player.v_move = false
@@ -275,12 +268,12 @@ class Node {
             // Calculate diagonal score (top-left to bottom-right)
             piece = getPiece(this.newPiece.y + (j * sign), this.newPiece.x + (j * sign), this.board)
             if (this.newPiece.y + (j * sign) < BOARD_SIZE && this.newPiece.x + (j * sign) < BOARD_SIZE && this.newPiece.y + (j * sign) >= 0 && this.newPiece.x + (j * sign) >= 0) {  // range condition
+
                 if (streak.player.dr_move && piece === (this.player)) {
                     if (sign == 1)
-                        streak.player.dr_right++
+                        streak.player.drb++
                     else
-                        streak.player.dr_left++
-
+                        streak.player.dlt++
                 }
                 else
                     streak.player.dr_move = false
@@ -295,16 +288,16 @@ class Node {
                         streak.availableSpace.dr_move = false
                 }
             }
+
             // Calculate diagonal score (top-right to bottom-left)
             piece = getPiece(this.newPiece.y + (j * sign), this.newPiece.x - (j * sign), this.board)
             if (this.newPiece.y + (j * sign) < BOARD_SIZE && this.newPiece.x - (j * sign) < BOARD_SIZE && this.newPiece.y + (j * sign) >= 0 && this.newPiece.x - (j * sign) >= 0) {  // range condition
 
                 if (streak.player.dl_move && piece === (this.player)) {
                     if (sign == 1)
-                        streak.player.dl_right++
+                        streak.player.dlb++
                     else
-                        streak.player.dl_left++
-
+                        streak.player.drt++
                 }
                 else
                     streak.player.dl_move = false
@@ -337,9 +330,9 @@ class Node {
             }
         }
         streak.player.h_length = streak.player.h_right + streak.player.h_left
-        streak.player.v_length = streak.player.v_right + streak.player.v_left
-        streak.player.dr_length = streak.player.dr_right + streak.player.dr_left
-        streak.player.dl_length = streak.player.dl_right + streak.player.dl_left
+        streak.player.v_length = streak.player.v_bottom + streak.player.v_top
+        streak.player.dr_length = streak.player.drb + streak.player.dlt
+        streak.player.dl_length = streak.player.dlb + streak.player.drt
 
         return streak
     }
@@ -352,18 +345,18 @@ class Node {
                 h_length: 0,  // length: 1 of the full row, (right + left)
                 h_move: true,  // state of the row   true for available, false for ended
 
-                v_right: 0,
-                v_left: 0,
+                v_bottom: 0,
+                v_top: 0,
                 v_length: 0,
                 v_move: true,
 
-                dr_right: 0,
-                dr_left: 0,
+                drb: 0,
+                dlt: 0,
                 dr_length: 0,
                 dr_move: true,
 
-                dl_right: 0,
-                dl_left: 0,
+                dlb: 0,
+                drt: 0,
                 dl_length: 0,
                 dl_move: true,
                 connections: 0
@@ -439,9 +432,9 @@ class Node {
 
                 if (streak.enemy.v_move && piece === (enemy)) {
                     if (sign == 1)
-                        streak.enemy.v_right++
+                        streak.enemy.v_bottom++
                     else
-                        streak.enemy.v_left++
+                        streak.enemy.v_top++
 
                 }
                 else
@@ -463,9 +456,9 @@ class Node {
             if (this.newPiece.y + (j * sign) < BOARD_SIZE && this.newPiece.x + (j * sign) < BOARD_SIZE && this.newPiece.y + (j * sign) >= 0 && this.newPiece.x + (j * sign) >= 0) {  // range condition
                 if (streak.enemy.dr_move && piece === (enemy)) {
                     if (sign == 1)
-                        streak.enemy.dr_right++
+                        streak.enemy.drb++
                     else
-                        streak.enemy.dr_left++
+                        streak.enemy.dlt++
 
                 }
                 else
@@ -487,9 +480,9 @@ class Node {
 
                 if (streak.enemy.dl_move && piece === (enemy)) {
                     if (sign == 1)
-                        streak.enemy.dl_right++
+                        streak.enemy.dlb++
                     else
-                        streak.enemy.dl_left++
+                        streak.enemy.drt++
 
                 }
                 else
@@ -524,9 +517,9 @@ class Node {
             }
         }
         streak.enemy.h_length = streak.enemy.h_right + streak.enemy.h_left
-        streak.enemy.v_length = streak.enemy.v_right + streak.enemy.v_left
-        streak.enemy.dr_length = streak.enemy.dr_right + streak.enemy.dr_left
-        streak.enemy.dl_length = streak.enemy.dl_right + streak.enemy.dl_left
+        streak.enemy.v_length = streak.enemy.v_bottom + streak.enemy.v_top
+        streak.enemy.dr_length = streak.enemy.drb + streak.enemy.dlt
+        streak.enemy.dl_length = streak.enemy.dlb + streak.enemy.drt
 
         return streak
     }
@@ -560,27 +553,24 @@ class Node {
     validateScores() {
         const player = this.scores.player
         const enemy = this.scores.enemy
-        const fling = false
-        const toKill = []
         let freeThrees = 0
         // checking horizental row for a row of 2
         // right side of the currently placed piece
-        if (player.ends.right != HUMAN && player.ends.left != HUMAN) {
-            freeThrees = player.h_right == 3 ? freeThrees + 1 : freeThrees
+        if (player.availableSpace.h_length > 4) {
+            freeThrees = player.player.h_right == 3 ? freeThrees + 1 : freeThrees
             freeThrees = player.player.h_left == 2 ? freeThrees + 1 : freeThrees
         }
-        if (player.ends.top != HUMAN && player.ends.bottom != HUMAN) {
-            freeThrees = player.player.v_right == 3 ? freeThrees + 1 : freeThrees
-            freeThrees = player.player.v_left == 2 ? freeThrees + 1 : freeThrees
+        if (player.availableSpace.v_length > 4) {
+            freeThrees = player.player.v_bottom == 3 ? freeThrees + 1 : freeThrees
+            freeThrees = player.player.v_top == 2 ? freeThrees + 1 : freeThrees
         }
-        if (player.ends.dbl != HUMAN && player.ends.dtr != HUMAN) {
-            freeThrees = player.player.dl_right == 3 ? freeThrees + 1 : freeThrees
-            freeThrees = player.player.dl_left == 2 ? freeThrees + 1 : freeThrees
+        if (player.availableSpace.dl_length > 4) {
+            freeThrees = player.player.dlb == 3 ? freeThrees + 1 : freeThrees
+            freeThrees = player.player.drt == 2 ? freeThrees + 1 : freeThrees
         }
-        if (player.ends.dbr != HUMAN && player.ends.dtl != HUMAN) {
-            freeThrees = player.player.dr_right == 3 ? freeThrees + 1 : freeThrees
-            if (player.player.dr_left == 2)
-                freeThrees = player.player.dr_left == 2 ? freeThrees + 1 : freeThrees
+        if (player.availableSpace.dr_length > 4) {
+            freeThrees = player.player.drb == 3 ? freeThrees + 1 : freeThrees
+            freeThrees = player.player.dlt == 2 ? freeThrees + 1 : freeThrees
         }
         this.freeThrees = freeThrees
 
@@ -593,22 +583,22 @@ class Node {
             this.fling = { y: 0, x: 1 }
 
         }
-        if (enemy.enemy.v_left == 2 && enemy.ends.top == this.player)           // top
+        if (enemy.enemy.v_top == 2 && enemy.ends.top == this.player)           // top
             this.fling = { y: -1, x: 0 }
 
-        if (enemy.enemy.v_right == 2 && enemy.ends.bottom == this.player)       // bottom
+        if (enemy.enemy.v_bottom == 2 && enemy.ends.bottom == this.player)       // bottom
             this.fling = { y: 1, x: 0 }
 
-        if (enemy.enemy.dl_right == 2 && enemy.ends.dlb == this.player)         // diagonal left bottom
+        if (enemy.enemy.dlb == 2 && enemy.ends.dbl == this.player)         // diagonal left bottom
             this.fling = { y: 1, x: -1 }
 
-        if (enemy.enemy.dl_left == 2 && enemy.ends.drt == this.player)          // diagonal right top
+        if (enemy.enemy.drt == 2 && enemy.ends.dtr == this.player)          // diagonal right top
             this.fling = { y: -1, x: 1 }
 
-        if (enemy.enemy.dr_right == 2 && enemy.ends.drb == this.player)         // diagonal right bottom
+        if (enemy.enemy.drb == 2 && enemy.ends.dbr == this.player)         // diagonal right bottom
             this.fling = { y: 1, x: 1 }
 
-        if (enemy.enemy.dr_left == 2 && enemy.ends.dlt == this.player)            // diagonal left top
+        if (enemy.enemy.dlt == 2 && enemy.ends.dtl == this.player)            // diagonal left top
             this.fling = { y: -1, x: -1 }
 
 
@@ -684,17 +674,17 @@ class Tracker {
     }
 }
 
-function deletPiece(x, y, board) {
-    board[1][y] &= ~(1 << x);
+function deletPiece(x, y, player, board) {
+    board[player][y] &= ~(1 << x);
     return board
 }
 
 function fling(node) {
+    const player = node.player == AI ? 1 : 0
     if (node.fling) {
-        log(node.board)
-        deletPiece(node.newPiece.y + node.fling.y, node.newPiece.x + node.fling.x, node.board)
-        deletPiece(node.newPiece.y + (node.fling.y * 2), node.newPiece.x + (node.fling.x * 2), node.board)
-
+        log("flung", player)
+        deletPiece(node.newPiece.y + node.fling.y, node.newPiece.x + node.fling.x, player, node.board)
+        deletPiece(node.newPiece.y + (node.fling.y * 2), node.newPiece.x + (node.fling.x * 2), player, node.board)
     }
 }
 
@@ -774,17 +764,24 @@ function minimax(board, depth, alpha, beta, maximizingPlayer, tracker) {
 
         log(bestMove.score)
         fling(bestMove)
-        return bestMove.board; // If it's the first depth level, return the board of the best move
+        return bestMove; // If it's the first depth level, return the board of the best move
     }
     cache.set(key, bestValue); // Cache the computed best value
     return bestValue; // Return the best value at the current depth
 }
 
+function winnerCheck(node) {
+    const player = node.scores.player
+    const maxLength = Math.max(player.player.h_length, player.player.v_length, player.player.dr_length, player.player.dl_length)
+    if (maxLength >= 5)
+        return true
+    return false
+}
 
 // Handle messages from the main thread
 self.onmessage = function (event) {
     // Create a bit board for each player
-    const result = null
+    let result = null
     var tracker = new Tracker
 
     var alpha = Number.NEGATIVE_INFINITY;
@@ -794,24 +791,31 @@ self.onmessage = function (event) {
     // const ret = minimax(node, DEPTH, alpha, beta, isMaximizingPlayer );
     // start =  performance.now()
     const { board, turn, aiPlayer, newPiece } = event.data;
-    
+
     // Call the minimax function
     // console.clear()
-    if (aiPlayer){
-
+    if (aiPlayer) {
+        log("making human node for AI")
         const node = new Node(board, HUMAN, null, calcBoundries(board), null, DEPTH + 1)
         result = minimax(node, DEPTH, alpha, beta, isMaximizingPlayer, tracker);
         console.log("cach hits", tracker.memory)
         console.log("ittirations", tracker.player)
-        result =  {newBoard: result, valid: true}
+        const gameOver = winnerCheck(result)
+        result = { newBoard: result.board, valid: true, gameOver: gameOver }
 
     }
-    else{
-        const node = new Node(board, turn, newPiece, calcBoundries(board), null, DEPTH + 1)
+    else {
+
+        const node = new Node(board, turn == 0 ? 1 : 2, newPiece, calcBoundries(board), null, DEPTH + 1)
+        log(node)
+        log(node.freeThrees)
+        fling(node)
         if (node.freeThrees == 2)
-            result =  {newBoard: null, valid: false}
-        else
-            result =  {newBoard: node.board, valid: true}
+            result = { newBoard: null, valid: false }
+        else {
+            const gameOver = winnerCheck(node)
+            result = { newBoard: node.board, valid: true, gameOver: gameOver }
+        }
 
     }
     cache.clear();

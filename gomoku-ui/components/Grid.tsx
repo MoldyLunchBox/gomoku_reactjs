@@ -7,8 +7,11 @@ interface Props {
   board: any[][],
   turn: number,
   aiPlayer: boolean,
-  setTurn:  React.Dispatch<React.SetStateAction<number>>
+  gameOver: boolean,
+  setTurn: React.Dispatch<React.SetStateAction<number>>
   setBoard: React.Dispatch<React.SetStateAction<any[][]>>
+  setGameOver: React.Dispatch<React.SetStateAction<boolean>>
+
 }
 function getPiece(x: number, y: number, board: any[][]) {
   const player1 = board[0][y] & (1 << x);
@@ -28,23 +31,36 @@ function setPiece(x: number, y: number, player: number, board: any[][]) {
   return board
 }
 
-export const Grid = ({ board,turn, aiPlayer, setTurn, setBoard }: Props) => {
+export const Grid = ({ board, turn, aiPlayer, setTurn, setBoard, gameOver, setGameOver }: Props) => {
   const handleClick = async (e: any) => {
+  console.clear()
+
     const i = parseInt(`${e.target.id / 19}`)
     const j = e.target.id % 19
-
-    const newboard = Array.from(setPiece(i, j,turn, board))
+    let result = null
+    const newboard = JSON.parse(JSON.stringify(board))
+    setPiece(i, j, turn, newboard)
     // console.log(i, j, e.target.id, e.target.id / 19)
     const start = performance.now();
-    const {newBoard, valid} = await counterMove(newboard, turn, aiPlayer, {y:i, x:j})
+    result = await counterMove(newboard, turn, false, { y: i, x: j })
+    if (aiPlayer && result.valid) {
+      setBoard(result.newBoard)
+      result = await counterMove(result.newBoard, 1, aiPlayer, { y: i, x: j })
+
+    }
     // setBoard(newboard)
-    const newTurn = turn ? 0 : 1
-    setTurn(newTurn)
     const end = performance.now();
     const elapsed = end - start;
     console.log("time:", elapsed.toFixed(2))
-    if (valid)
-    setBoard(newBoard)
+    console.log(result)
+    if (result.valid) {
+      if (!aiPlayer)
+        setTurn(turn ? 0 : 1)
+      console.log("new board is set")
+      setBoard(result.newBoard)
+      if (result.gameOver)
+        setGameOver(true)
+    }
   }
   return (
     <div className="flex justify-center items-center">
@@ -53,7 +69,7 @@ export const Grid = ({ board,turn, aiPlayer, setTurn, setBoard }: Props) => {
         <div className='grid grid-cols3 h-full w-full bg-[#008080]' >
           {board[1].map((_, i) => (
             board[1].map((_, j) => (
-              <div id={`${(i * 19) + j}`} className={`square cursor-pointer z-10 }`} onClick={handleClick} key={(i * 19) + j}>
+              <div id={`${(i * 19) + j}`} className={`square cursor-pointer z-10 }`} onClick={ !gameOver ? handleClick: ((e)=>(console.log("game over")))} key={(i * 19) + j}>
                 <div className='horizontal-line top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-0'></div>
                 <div className='vertical-line top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-0'></div>
                 <div className={`w-full h-full absolute pointer-events-none ${getPiece(i, j, board) == 2 ? 'bg-red-400 rounded-full' : getPiece(i, j, board) == 1 ? 'bg-black rounded-full' : ''}`}></div>

@@ -34,8 +34,9 @@ export default function Home() {
     new Array(19).fill(0), // Player 2's bit board
   ];
   const [board, setBoard] = useState(initialBoard);
-  const [turn, setTurn] = useState(0)
-  const [aiPlayer, setAiPlayer] = useState(false)
+  const [turn, setTurn] = useState(1)
+  const [aiPlayer, setAiPlayer] = useState(true)
+  const [gameOver, setGameOver] = useState(false)
   useEffect(() => {
     // console.clear()
     // for (let i = 0; i < 19; i++){
@@ -55,12 +56,12 @@ export default function Home() {
     <main className='  h-full bg-gradient-to-b from-cyan-500 to-blue-500'>
       <div className='container mx-auto px-4'>
 
-      <div className="flex flex-row flex-wrap justify-center bg-black">
+      <div className="flex flex-row flex-wrap justify-center ">
         <div className="basis-2/3">
-          <Grid board={board} turn={turn} aiPlayer={aiPlayer} setTurn={setTurn} setBoard={setBoard} />
+          <Grid board={board} turn={turn} aiPlayer={aiPlayer} setTurn={setTurn} setBoard={setBoard} gameOver={gameOver} setGameOver={setGameOver} />
         </div>
         <div className=" bg-white basis-1/3">
-          <Panel />
+          <Panel aiPlayer={aiPlayer} setAiPlayer={setAiPlayer} />
         </div>
       </div>
       <Article />
