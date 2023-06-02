@@ -36,7 +36,34 @@ export default function Home() {
   const [board, setBoard] = useState(initialBoard);
   const [turn, setTurn] = useState(1)
   const [aiPlayer, setAiPlayer] = useState(true)
-  const [gameOver, setGameOver] = useState(false)
+  const [gameOver, setGameOver] = useState(0)
+  const [score, setScore] = useState({player1: 0, player2: 0})
+  useEffect(()=>{
+    if (gameOver == 1)
+      setScore({player1: score.player1 + 1, player2: score.player2})
+    else if (gameOver == 2)
+      setScore({player1: score.player1 , player2: score.player2 + 1})
+    else{
+      const initialBoard = [
+        new Array(19).fill(0), // Player 1's bit board
+        new Array(19).fill(0), // Player 2's bit board
+      ];
+      setBoard(initialBoard)
+      setGameOver(0)
+    }
+      
+    
+  },[gameOver])
+  useEffect(()=>{
+    const initialBoard = [
+      new Array(19).fill(0), // Player 1's bit board
+      new Array(19).fill(0), // Player 2's bit board
+    ];
+    setBoard(initialBoard)
+    setGameOver(0)
+    setTurn(1)
+    setScore({player1: 0, player2: 0})
+  },[aiPlayer])
   useEffect(() => {
     // console.clear()
     // for (let i = 0; i < 19; i++){
@@ -58,10 +85,10 @@ export default function Home() {
 
       <div className="flex flex-row flex-wrap justify-center ">
         <div className="basis-2/3">
-          <Grid board={board} turn={turn} aiPlayer={aiPlayer} setTurn={setTurn} setBoard={setBoard} gameOver={gameOver} setGameOver={setGameOver} />
+          <Grid board={board} turn={turn} aiPlayer={aiPlayer} setTurn={setTurn} setBoard={setBoard} gameOver={gameOver} setGameOver={setGameOver} setScore={setScore}/>
         </div>
         <div className=" bg-white basis-1/3">
-          <Panel aiPlayer={aiPlayer} setAiPlayer={setAiPlayer} />
+          <Panel aiPlayer={aiPlayer} setAiPlayer={setAiPlayer} score={score} setGameOver={setGameOver}/>
         </div>
       </div>
       <Article />

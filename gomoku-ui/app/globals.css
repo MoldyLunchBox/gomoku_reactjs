@@ -51,11 +51,12 @@ body {
 }
 
 .result {
-  font-size:1.4em;
   text-align:center;
   color:navy
  }
  .score {
+  font-size:1.4em;
+
   margin:1em 0 .32em 0
  }
 .result span {

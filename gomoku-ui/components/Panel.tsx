@@ -3,11 +3,21 @@ import React from 'react'
 interface Props {
     aiPlayer: boolean,
     setAiPlayer: React.Dispatch<React.SetStateAction<boolean>>
+    score: {
+        player1: number;
+        player2: number;
+    }
+  setGameOver: React.Dispatch<React.SetStateAction<number>>
+
 }
 
-function Panel({ aiPlayer, setAiPlayer }: Props) {
+function Panel({ aiPlayer, setAiPlayer, score, setGameOver }: Props) {
     const handleToggle = () => {
         setAiPlayer(!aiPlayer);
+    };
+    const handleRestart = () => {
+
+        setGameOver(-1);
     };
     return (
         <div className="flex flex-col justify-center">
@@ -26,11 +36,22 @@ function Panel({ aiPlayer, setAiPlayer }: Props) {
             </div>
             <div className="result">
                 <h1 className='text-3xl'> Results </h1>
-                <div className='score'></div>
-                <span className="scorePlayer1"> me</span>
-                <span className='delimiter'> :</span>
-                <span className="scorePlayer2"> me</span>
+                <div className='score'>
+                    <span className="scorePlayer1"> {score.player1}</span>
+                    <span className='delimiter'> :</span>
+                    <span className="scorePlayer2"> {score.player2}</span>
+                </div>
+                <div>
+                    <span className="namePlayer1"> me</span>
+                    <span className='delimiter'> </span>
+                    <span className="namePlayer2"> {`${aiPlayer ? 'comp' : 'you'}`}</span>
+                </div>
 
+        
+                <button onClick={handleRestart} className="w-15 mt-8 bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow">
+                    Restart
+                </button>
+      
             </div>
 
 
