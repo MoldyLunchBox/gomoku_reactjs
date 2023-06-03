@@ -682,7 +682,6 @@ function deletPiece(x, y, player, board) {
 function fling(node) {
     const player = node.player == AI ? 1 : 0
     if (node.fling) {
-        log("flung", player)
         deletPiece(node.newPiece.y + node.fling.y, node.newPiece.x + node.fling.x, player, node.board)
         deletPiece(node.newPiece.y + (node.fling.y * 2), node.newPiece.x + (node.fling.x * 2), player, node.board)
     }
@@ -759,10 +758,6 @@ function minimax(board, depth, alpha, beta, maximizingPlayer, tracker) {
     }
 
     if (depth === DEPTH) {
-        log(bestMove.scores.enemy)
-        log(bestMove.fling)
-
-        log(bestMove.score)
         fling(bestMove)
         return bestMove; // If it's the first depth level, return the board of the best move
     }
@@ -795,11 +790,10 @@ self.onmessage = function (event) {
     // Call the minimax function
     // console.clear()
     if (aiPlayer) {
-        log("making human node for AI")
         const node = new Node(board, HUMAN, null, calcBoundries(board), null, DEPTH + 1)
         result = minimax(node, DEPTH, alpha, beta, isMaximizingPlayer, tracker);
         console.log("cach hits", tracker.memory)
-        console.log("ittirations", tracker.player)
+        console.log("depth", tracker.player)
         const gameOver = winnerCheck(result)
         result = { newBoard: result.board, valid: true, gameOver: gameOver, fling: (result.fling ? true : false) }
 
@@ -807,8 +801,6 @@ self.onmessage = function (event) {
     else {
 
         const node = new Node(board, turn == 0 ? 1 : 2, newPiece, calcBoundries(board), null, DEPTH + 1)
-        log(node)
-        log(node.freeThrees)
         fling(node)
         if (node.freeThrees == 2)
             result = { newBoard: null, valid: false }

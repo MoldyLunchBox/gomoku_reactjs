@@ -46,49 +46,49 @@ export const Grid = ({ board, turn, aiPlayer, setTurn, setBoard, gameOver, setGa
 
     const i = parseInt(`${e.target.id / 19}`)
     const j = e.target.id % 19
-    let result = null
-    const newboard = JSON.parse(JSON.stringify(board))
-    setPiece(i, j, turn, newboard)
-    const start = performance.now();
-    result = await counterMove(newboard, turn, false, { y: i, x: j })
-    if (aiPlayer && result.valid) {
-      if (result.fling)
+    if (getPiece(i, j, board) == 0)
+    {
+
+      let result = null
+      const newboard = JSON.parse(JSON.stringify(board))
+      setPiece(i, j, turn, newboard)
+      const start = performance.now();
+      result = await counterMove(newboard, turn, false, { y: i, x: j })
+      if (aiPlayer && result.valid) {
+        if (result.fling)
         setCaptures({ player1: captures.player1 + 1, player2: captures.player2 })
-      setBoard(result.newBoard)
-      if (result.gameOver){
-        console.log("user shud win")
-        setGameOver(1)
-      }
-      else
+        setBoard(result.newBoard)
+        if (result.gameOver) {
+          setGameOver(1)
+        }
+        else
         result = await counterMove(result.newBoard, 1, aiPlayer, { y: i, x: j })
         if (result.fling)
-      setCaptures({ player1: captures.player1 , player2: captures.player2 + 1 })
-
-    }
-    // setBoard(newboard)
-    const end = performance.now();
-    const elapsed = end - start;
-    console.log("time:", elapsed.toFixed(2))
-    console.log(result)
-    if (result.valid) {
-      if (!aiPlayer) {
-        if (result.fling) {
-          if (turn)
-            setCaptures({ player1: captures.player1 + 1, player2: captures.player2 })
-          else
-            setCaptures({ player1: captures.player1, player2: captures.player2 + 1 })
-        }
-        if (result.gameOver)
-          setGameOver(turn == 1 ? 1 : 2)
-        else
-          setTurn(turn ? 0 : 1)
+        setCaptures({ player1: captures.player1, player2: captures.player2 + 1 })
+        
       }
-      else if (result.gameOver)
+      // setBoard(newboard)
+      const end = performance.now();
+      const elapsed = end - start;
+      console.log("time:", elapsed.toFixed(2))
+      if (result.valid) {
+        if (!aiPlayer) {
+          if (result.fling) {
+            if (turn)
+            setCaptures({ player1: captures.player1 + 1, player2: captures.player2 })
+            else
+            setCaptures({ player1: captures.player1, player2: captures.player2 + 1 })
+          }
+          if (result.gameOver)
+          setGameOver(turn == 1 ? 1 : 2)
+          else
+          setTurn(turn ? 0 : 1)
+        }
+        else if (result.gameOver)
         setGameOver(2)
-
-      console.log("new board is set")
-      setBoard(result.newBoard)
-    
+        setBoard(result.newBoard)
+        
+      }
     }
   }
   return (
