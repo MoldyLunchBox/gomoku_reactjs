@@ -15,18 +15,18 @@
 }
 
 .horizontal-line {
-  height: 2px;
+  height: 1px;
   width: 100%;
   position: absolute;
-  background-color: brown;
+  background-color: #2b2929;
 
 }
 
 .vertical-line {
-  width: 2px;
+  width: 1px;
   height: 100%;
   position: absolute;
-  background-color: brown;
+  background-color: #2b2929;
 }
 
 .grid-cols3 {
@@ -41,8 +41,16 @@
 }
 
 body {
-  height: 100%;
+  height: 900px;
+  background-image: linear-gradient(to bottom, var(--tw-gradient-stops));
+  --tw-gradient-from: #06b6d4 var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(6 182 212 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+  --tw-gradient-from: #06b6d4 var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(6 182 212 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
+
 
 .my-text {
   margin: 1em auto 4em auto;
@@ -51,42 +59,60 @@ body {
 }
 
 .result {
-  text-align:center;
-  color:navy
- }
- .score {
-  font-size:1.4em;
+  text-align: center;
+  color: #000080
+}
 
-  margin:1em 0 .32em 0
- }
+.score {
+  font-size: 1.4em;
+
+  margin: 1em 0 .32em 0
+}
+
 .result span {
-  display:inline-block;
-  text-align:center
- }
+  display: inline-block;
+  text-align: center
+}
 
- .delimiter {
-  width:2rem
+.delimiter {
+  width: 2rem
+}
+
+.scorePlayer1,
+.scorePlayer2,
+.delimiter {
+  font-size: 1.8em
+}
+
+.scorePlayer1,
+.scorePlayer2,
+.namePlayer1,
+.namePlayer2 {
+  width: 5rem
+}
+
+.namePlayer1,
+.namePlayer2 {
+  font-size: 1.4rem
+}
+
+.scorePlayer1,
+.namePlayer1 {
+  color: #4169e1
+}
+
+.scorePlayer2,
+.namePlayer2 {
+  color: #ff6347
+}
+
+.help {
+  margin:1em auto 4em auto;
+  padding:1em
  }
- .scorePlayer1,
- .scorePlayer2,
- .delimiter {
-  font-size:1.8em
- }
- .scorePlayer1,
- .scorePlayer2,
- .namePlayer1,
- .namePlayer2 {
-  width:5rem
- }
- .namePlayer1,
- .namePlayer2 {
-  font-size:1.4rem
- }
- .scorePlayer1,
- .namePlayer1 {
-  color:royalblue
- }
- .scorePlayer2,
- .namePlayer2 {
-  color:tomato
+ .help p {
+  margin:1em 0;
+  text-align:justify;
+  text-indent:1.52em;
+  line-height:1.42em
  }

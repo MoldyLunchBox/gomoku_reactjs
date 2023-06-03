@@ -15,6 +15,11 @@ interface Props {
     player1: number;
     player2: number;
   }>>
+  setCaptures: React.Dispatch<React.SetStateAction<{
+    player1: number;
+    player2: number;
+  }>>
+  captures: { player1: number, player2: number }
 }
 function getPiece(x: number, y: number, board: any[][]) {
   const player1 = board[0][y] & (1 << x);
@@ -34,7 +39,8 @@ function setPiece(x: number, y: number, player: number, board: any[][]) {
   return board
 }
 
-export const Grid = ({ board, turn, aiPlayer, setTurn, setBoard, gameOver, setGameOver, setScore }: Props) => {
+export const Grid = ({ board, turn, aiPlayer, setTurn, setBoard, gameOver, setGameOver, setScore, setCaptures, captures }: Props) => {
+
   const handleClick = async (e: any) => {
     console.clear()
 
@@ -43,15 +49,20 @@ export const Grid = ({ board, turn, aiPlayer, setTurn, setBoard, gameOver, setGa
     let result = null
     const newboard = JSON.parse(JSON.stringify(board))
     setPiece(i, j, turn, newboard)
-    // console.log(i, j, e.target.id, e.target.id / 19)
     const start = performance.now();
     result = await counterMove(newboard, turn, false, { y: i, x: j })
     if (aiPlayer && result.valid) {
+      if (result.fling)
+        setCaptures({ player1: captures.player1 + 1, player2: captures.player2 })
       setBoard(result.newBoard)
-      if (result.gameOver)
+      if (result.gameOver){
+        console.log("user shud win")
         setGameOver(1)
+      }
       else
         result = await counterMove(result.newBoard, 1, aiPlayer, { y: i, x: j })
+        if (result.fling)
+      setCaptures({ player1: captures.player1 , player2: captures.player2 + 1 })
 
     }
     // setBoard(newboard)
@@ -61,6 +72,12 @@ export const Grid = ({ board, turn, aiPlayer, setTurn, setBoard, gameOver, setGa
     console.log(result)
     if (result.valid) {
       if (!aiPlayer) {
+        if (result.fling) {
+          if (turn)
+            setCaptures({ player1: captures.player1 + 1, player2: captures.player2 })
+          else
+            setCaptures({ player1: captures.player1, player2: captures.player2 + 1 })
+        }
         if (result.gameOver)
           setGameOver(turn == 1 ? 1 : 2)
         else
@@ -71,21 +88,20 @@ export const Grid = ({ board, turn, aiPlayer, setTurn, setBoard, gameOver, setGa
 
       console.log("new board is set")
       setBoard(result.newBoard)
-      if (result.gameOver)
-        setScore
+    
     }
   }
   return (
     <div className="flex justify-center items-center">
       <div className="w-[600px]">
 
-        <div className='grid grid-cols3 h-full w-full bg-[#008080]' >
+        <div className='grid grid-cols3 h-full w-full bg-white shadow-md shadow-[#434141] ' >
           {board[1].map((_, i) => (
             board[1].map((_, j) => (
               <div id={`${(i * 19) + j}`} className={`square cursor-pointer z-10 }`} onClick={!gameOver ? handleClick : ((e) => (console.log("game over")))} key={(i * 19) + j}>
                 <div className='horizontal-line top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-0'></div>
                 <div className='vertical-line top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-0'></div>
-                <div className={`w-full h-full absolute pointer-events-none ${getPiece(i, j, board) == 2 ? 'bg-red-400 rounded-full' : getPiece(i, j, board) == 1 ? 'bg-black rounded-full' : ''}`}></div>
+                <div className={`w-full h-full absolute pointer-events-none ${getPiece(i, j, board) == 2 ? 'bg-[#4169e1] rounded-full' : getPiece(i, j, board) == 1 ? 'bg-[#ff6347] rounded-full' : ''}`}></div>
                 {/* <h2 className={`top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2  pointer-events-none`}>{getPiece(i, j, board)}</h2> */}
               </div>
             ))

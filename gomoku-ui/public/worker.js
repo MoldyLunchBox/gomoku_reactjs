@@ -801,7 +801,7 @@ self.onmessage = function (event) {
         console.log("cach hits", tracker.memory)
         console.log("ittirations", tracker.player)
         const gameOver = winnerCheck(result)
-        result = { newBoard: result.board, valid: true, gameOver: gameOver }
+        result = { newBoard: result.board, valid: true, gameOver: gameOver, fling: (result.fling ? true : false) }
 
     }
     else {
@@ -814,7 +814,7 @@ self.onmessage = function (event) {
             result = { newBoard: null, valid: false }
         else {
             const gameOver = winnerCheck(node)
-            result = { newBoard: node.board, valid: true, gameOver: gameOver }
+            result = { newBoard: node.board, valid: true, gameOver: gameOver, fling: (node.fling ? true : false) }
         }
 
     }

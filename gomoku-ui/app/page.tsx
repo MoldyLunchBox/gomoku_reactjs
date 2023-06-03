@@ -37,13 +37,14 @@ export default function Home() {
   const [turn, setTurn] = useState(1)
   const [aiPlayer, setAiPlayer] = useState(true)
   const [gameOver, setGameOver] = useState(0)
-  const [score, setScore] = useState({player1: 0, player2: 0})
-  useEffect(()=>{
+  const [score, setScore] = useState({ player1: 0, player2: 0 })
+  const [captures, setCaptures] = useState({ player1: 0, player2: 0 })
+  useEffect(() => {
     if (gameOver == 1)
-      setScore({player1: score.player1 + 1, player2: score.player2})
+      setScore({ player1: score.player1 + 1, player2: score.player2 })
     else if (gameOver == 2)
-      setScore({player1: score.player1 , player2: score.player2 + 1})
-    else{
+      setScore({ player1: score.player1, player2: score.player2 + 1 })
+    else {
       const initialBoard = [
         new Array(19).fill(0), // Player 1's bit board
         new Array(19).fill(0), // Player 2's bit board
@@ -51,10 +52,11 @@ export default function Home() {
       setBoard(initialBoard)
       setGameOver(0)
     }
-      
-    
-  },[gameOver])
-  useEffect(()=>{
+    setCaptures({ player1: 0, player2: 0 })
+
+
+  }, [gameOver])
+  useEffect(() => {
     const initialBoard = [
       new Array(19).fill(0), // Player 1's bit board
       new Array(19).fill(0), // Player 2's bit board
@@ -62,8 +64,18 @@ export default function Home() {
     setBoard(initialBoard)
     setGameOver(0)
     setTurn(1)
-    setScore({player1: 0, player2: 0})
-  },[aiPlayer])
+    setScore({ player1: 0, player2: 0 })
+  }, [aiPlayer])
+  useEffect(() => {
+    if (captures.player1 == 9) {
+      setGameOver(1)
+      setCaptures({ player1: 0, player2: 0 })
+    }
+    else if ((captures.player2 == 9)) {
+      setGameOver(2)
+      setCaptures({ player1: 0, player2: 0 })
+    }
+  })
   useEffect(() => {
     // console.clear()
     // for (let i = 0; i < 19; i++){
@@ -80,18 +92,18 @@ export default function Home() {
   },)
 
   return (
-    <main className='  h-full bg-gradient-to-b from-cyan-500 to-blue-500'>
+    <main className='  h-full bg-gradient-to-b from-cyan-500 to-blue-500 my-10'>
       <div className='container mx-auto px-4'>
-
-      <div className="flex flex-row flex-wrap justify-center ">
-        <div className="basis-2/3">
-          <Grid board={board} turn={turn} aiPlayer={aiPlayer} setTurn={setTurn} setBoard={setBoard} gameOver={gameOver} setGameOver={setGameOver} setScore={setScore}/>
+        <div className="flex flex-row flex-wrap justify-center ">
+        <h1 className="mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl dark:text-white">Gomoku <mark className="px-2 text-white bg-blue-600 rounded dark:bg-blue-500">ONLINE</mark></h1>
+          <div className="basis-2/3 mb-5">
+            <Grid board={board} turn={turn} aiPlayer={aiPlayer} setTurn={setTurn} setBoard={setBoard} gameOver={gameOver} setGameOver={setGameOver} setScore={setScore} captures={captures} setCaptures={setCaptures} />
+          </div>
+          <div className=" bg-white w-full md:w-1/3 max-w-[600px] max-h-[600px] shadow-md shadow-[#434141]">
+            <Panel aiPlayer={aiPlayer} setAiPlayer={setAiPlayer} score={score} setGameOver={setGameOver} captures={captures} />
+          </div>
         </div>
-        <div className=" bg-white basis-1/3">
-          <Panel aiPlayer={aiPlayer} setAiPlayer={setAiPlayer} score={score} setGameOver={setGameOver}/>
-        </div>
-      </div>
-      <Article />
+        <Article />
       </div>
     </main>
   )
