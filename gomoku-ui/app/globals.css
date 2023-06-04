@@ -78,11 +78,11 @@ body {
   width: 2rem
 }
 
-.scorePlayer1,
+/* .scorePlayer1,
 .scorePlayer2,
 .delimiter {
   font-size: 1.8em
-}
+} */
 
 .scorePlayer1,
 .scorePlayer2,
@@ -91,10 +91,7 @@ body {
   width: 5rem
 }
 
-.namePlayer1,
-.namePlayer2 {
-  font-size: 1.4rem
-}
+
 
 .scorePlayer1,
 .namePlayer1 {

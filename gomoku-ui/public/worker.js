@@ -530,22 +530,18 @@ class Node {
         const enemy = this.scores.enemy
 
         // analysing and asigning score to player pieces
-        const p_h = gomokuShapeScore(player.player.h_length, (player.ends.left != HUMAN ? 1 : 0) + (player.ends.right != HUMAN ? 1 : 0), false, this.newPiece)
-        const p_v = gomokuShapeScore(player.player.v_length, (player.ends.bottom != HUMAN ? 1 : 0) + (player.ends.top != HUMAN ? 1 : 0), false, this.newPiece)
-        const p_dl = gomokuShapeScore(player.player.dl_length, (player.ends.dbl != HUMAN ? 1 : 0) + (player.ends.dtr != HUMAN ? 1 : 0), false, this.newPiece)
-        const p_dr = gomokuShapeScore(player.player.dr_length, (player.ends.dbr != HUMAN ? 1 : 0) + (player.ends.dtl != HUMAN ? 1 : 0), false, this.newPiece)
+        const p_h = gomokuShapeScore(player.player.h_length, (player.ends.left != HUMAN ? 1 : 0) + (player.ends.right != HUMAN ? 1 : 0), true, player.player.h_left == 0 || player.player.h_right == 1)
+        const p_v = gomokuShapeScore(player.player.v_length, (player.ends.bottom != HUMAN ? 1 : 0) + (player.ends.top != HUMAN ? 1 : 0), true, player.player.v_top == 0 || player.player.v_bottom == 1)
+        const p_dl = gomokuShapeScore(player.player.dl_length, (player.ends.dbl != HUMAN ? 1 : 0) + (player.ends.dtr != HUMAN ? 1 : 0), true, player.player.drt == 0 || player.player.dlb == 1)
+        const p_dr = gomokuShapeScore(player.player.dr_length, (player.ends.dbr != HUMAN ? 1 : 0) + (player.ends.dtl != HUMAN ? 1 : 0), true, player.player.dlt == 0 || player.player.drb == 1)
 
         // analysing and asigning score to enemy pieces
-        const e_h = gomokuShapeScore(enemy.enemy.h_length, (enemy.ends.left != AI ? 1 : 0) + (enemy.ends.right != AI ? 1 : 0), true, this.newPiece)
-        const e_v = gomokuShapeScore(enemy.enemy.v_length, (enemy.ends.bottom != AI ? 1 : 0) + (enemy.ends.top != AI ? 1 : 0), true, this.newPiece)
-        const e_dl = gomokuShapeScore(enemy.enemy.dl_length, (enemy.ends.dbl != AI ? 1 : 0) + (enemy.ends.dtr != AI ? 1 : 0), true, this.newPiece)
-        const e_dr = gomokuShapeScore(enemy.enemy.dr_length, (enemy.ends.dbr != AI ? 1 : 0) + (enemy.ends.dtl != AI ? 1 : 0), true, this.newPiece)
-        // if (this.newPiece.y == 1 && this.newPiece.x == 2){
+        const e_h = gomokuShapeScore(enemy.enemy.h_length, (enemy.ends.left != AI ? 1 : 0) + (enemy.ends.right != AI ? 1 : 0), false, enemy.enemy.h_left == 0 || enemy.enemy.h_right == 0)
+        const e_v = gomokuShapeScore(enemy.enemy.v_length, (enemy.ends.bottom != AI ? 1 : 0) + (enemy.ends.top != AI ? 1 : 0), false, enemy.enemy.v_top == 0 || enemy.enemy.v_bottom == 0)
+        const e_dl = gomokuShapeScore(enemy.enemy.dl_length, (enemy.ends.dbl != AI ? 1 : 0) + (enemy.ends.dtr != AI ? 1 : 0), false, enemy.enemy.drt == 0 || enemy.enemy.dlb == 0)
+        const e_dr = gomokuShapeScore(enemy.enemy.dr_length, (enemy.ends.dbr != AI ? 1 : 0) + (enemy.ends.dtl != AI ? 1 : 0), false, enemy.enemy.dlt == 0 || enemy.enemy.drb == 0)
 
-        //     log(this.newPiece , " :")
-        //     log(p_h, p_v, p_dl, p_dr, e_h, e_v, e_dl, e_dr)
 
-        // }
         this.debug = { p_h, p_v, p_dl, p_dr, e_h, e_v, e_dl, e_dr }
         const score = p_h + p_v + p_dl + p_dr + e_h + e_v + e_dl + e_dr + (this.parent ? this.parent.score : 0) + (this.fling ? 100 : 0)
         return (score)
@@ -553,6 +549,8 @@ class Node {
     validateScores() {
         const player = this.scores.player
         const enemy = this.scores.enemy
+        const i = this.newPiece.y
+        const j = this.newPiece.x
         let freeThrees = 0
         // checking horizental row for a row of 2
         // right side of the currently placed piece
@@ -575,33 +573,42 @@ class Node {
         this.freeThrees = freeThrees
 
         // checking possibility of flinging enemy pieces
+        if (this.newPiece.x == 0 && this.newPiece.y == 0 && this.depth == 5) {
+            console.log("debugging")
+            log(this.player)
 
-        if (enemy.enemy.h_left == 2 && enemy.ends.left == this.player)         // left
+            log(player)
+            log(enemy)
+            log("enemy.enemy.h_left ", enemy.enemy.h_left)
+            log("enemy.ends.left", enemy.ends.left)
+
+        }
+
+
+        if (enemy.enemy.h_left == 2 && getPiece(i, j - 3, this.board) == this.player)         // left
             this.fling = { y: 0, x: -1 }
-        if (enemy.enemy.h_right == 2 && enemy.ends.right == this.player) {      // right
+        if (enemy.enemy.h_right == 2 && getPiece(i, j + 3, this.board) == this.player) {      // right
 
             this.fling = { y: 0, x: 1 }
 
         }
-        if (enemy.enemy.v_top == 2 && enemy.ends.top == this.player)           // top
+        if (enemy.enemy.v_top == 2 && getPiece(i - 3, j, this.board) == this.player)           // top
             this.fling = { y: -1, x: 0 }
 
-        if (enemy.enemy.v_bottom == 2 && enemy.ends.bottom == this.player)       // bottom
+        if (enemy.enemy.v_bottom == 2 && getPiece(i + 3, j, this.board) == this.player)       // bottom
             this.fling = { y: 1, x: 0 }
 
-        if (enemy.enemy.dlb == 2 && enemy.ends.dbl == this.player)         // diagonal left bottom
+        if (enemy.enemy.dlb == 2 && getPiece(i + 3, j - 3, this.board) == this.player)         // diagonal left bottom
             this.fling = { y: 1, x: -1 }
 
-        if (enemy.enemy.drt == 2 && enemy.ends.dtr == this.player)          // diagonal right top
+        if (enemy.enemy.drt == 2 && getPiece(i - 3, j + 3, this.board) == this.player)          // diagonal right top
             this.fling = { y: -1, x: 1 }
 
-        if (enemy.enemy.drb == 2 && enemy.ends.dbr == this.player)         // diagonal right bottom
+        if (enemy.enemy.drb == 2 && getPiece(i + 3, j + 3, this.board) == this.player)         // diagonal right bottom
             this.fling = { y: 1, x: 1 }
 
-        if (enemy.enemy.dlt == 2 && enemy.ends.dtl == this.player)            // diagonal left top
+        if (enemy.enemy.dlt == 2 && getPiece(i - 3, j - 3, this.board) == this.player)            // diagonal left top
             this.fling = { y: -1, x: -1 }
-
-
 
         player.player.h_length = player.availableSpace.h_length + player.player.h_length >= 5 ? player.player.h_length : 0
         player.player.v_length = player.availableSpace.v_length + player.player.v_length >= 5 ? player.player.v_length : 0
@@ -613,7 +620,7 @@ class Node {
 
 }
 
-function gomokuShapeScore(consecutive, openEnds, currentTurn, newPiece) {
+function gomokuShapeScore(consecutive, openEnds, currentTurn, notSurounded) {
     if (openEnds == 0 && consecutive < 5 || consecutive == 0)
         return 0;
 
@@ -624,23 +631,26 @@ function gomokuShapeScore(consecutive, openEnds, currentTurn, newPiece) {
         case 4:
             switch (openEnds) {
                 case 1:
-                    if (currentTurn)
+                    if (!currentTurn)
                         return 500000; // Prioritize blocking enemy's open 4
                     return 20000; // Value player's open 4
                 case 2:
-                    if (currentTurn)
+                    if (!currentTurn)
                         return 500000; // Prioritize blocking enemy's open 4
-                    return 20000; // Value player's open 4
+                    return 30000; // Value player's open 4
             }
 
         case 3:
             switch (openEnds) {
                 case 1:
-                    if (currentTurn)
-                        return 7; // Value player's open 3
-                    return 5; // Prioritize blocking enemy's open 3
+                    if (!currentTurn) {
+                        return 50
+                    }
+                    if (notSurounded)
+                        return 30000; // Prioritize blocking enemy's open 3
+                    return 200
                 case 2:
-                    if (currentTurn)
+                    if (!currentTurn)
                         return 400000; // Value player's double open 3
                     return 20000; // Prioritize blocking enemy's double open 3
             }
@@ -648,9 +658,11 @@ function gomokuShapeScore(consecutive, openEnds, currentTurn, newPiece) {
         case 2:
             switch (openEnds) {
                 case 1:
-                    return 2; // Value player's open 2
+                    if (!currentTurn && notSurounded)
+                        return 20000; // Value player's open 3
+                    return 0; // Value player's open 2
                 case 2:
-                    return 5; // Value player's double open 2
+                    return 100; // Value player's double open 2
             }
 
         case 1:

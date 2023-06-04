@@ -8,6 +8,8 @@ interface Props {
   turn: number,
   aiPlayer: boolean,
   gameOver: number,
+  replay: any[][],
+  captures: { player1: number, player2: number }
   setTurn: React.Dispatch<React.SetStateAction<number>>
   setBoard: React.Dispatch<React.SetStateAction<any[][]>>
   setGameOver: React.Dispatch<React.SetStateAction<number>>
@@ -19,7 +21,8 @@ interface Props {
     player1: number;
     player2: number;
   }>>
-  captures: { player1: number, player2: number }
+  setReplay: React.Dispatch<React.SetStateAction<any[][]>>
+
 }
 function getPiece(x: number, y: number, board: any[][]) {
   const player1 = board[0][y] & (1 << x);
@@ -39,15 +42,14 @@ function setPiece(x: number, y: number, player: number, board: any[][]) {
   return board
 }
 
-export const Grid = ({ board, turn, aiPlayer, setTurn, setBoard, gameOver, setGameOver, setScore, setCaptures, captures }: Props) => {
+export const Grid = ({ board, turn, aiPlayer, setTurn, setBoard, gameOver, setGameOver, setScore, setCaptures, captures, replay, setReplay }: Props) => {
 
   const handleClick = async (e: any) => {
     console.clear()
 
     const i = parseInt(`${e.target.id / 19}`)
     const j = e.target.id % 19
-    if (getPiece(i, j, board) == 0)
-    {
+    if (getPiece(i, j, board) == 0) {
 
       let result = null
       const newboard = JSON.parse(JSON.stringify(board))
@@ -56,18 +58,20 @@ export const Grid = ({ board, turn, aiPlayer, setTurn, setBoard, gameOver, setGa
       result = await counterMove(newboard, turn, false, { y: i, x: j })
       if (aiPlayer && result.valid) {
         if (result.fling)
-        setCaptures({ player1: captures.player1 + 1, player2: captures.player2 })
+          setCaptures({ player1: captures.player1 + 1, player2: captures.player2 })
+        const replays = replay
+        replays.push(result.newBoard)
+        setReplay(replays)
         setBoard(result.newBoard)
         if (result.gameOver) {
           setGameOver(1)
         }
         else
-        result = await counterMove(result.newBoard, 1, aiPlayer, { y: i, x: j })
+          result = await counterMove(result.newBoard, 1, aiPlayer, { y: i, x: j })
         if (result.fling)
-        setCaptures({ player1: captures.player1, player2: captures.player2 + 1 })
-        
+          setCaptures({ player1: captures.player1, player2: captures.player2 + 1 })
+
       }
-      // setBoard(newboard)
       const end = performance.now();
       const elapsed = end - start;
       console.log("time:", elapsed.toFixed(2))
@@ -75,19 +79,23 @@ export const Grid = ({ board, turn, aiPlayer, setTurn, setBoard, gameOver, setGa
         if (!aiPlayer) {
           if (result.fling) {
             if (turn)
-            setCaptures({ player1: captures.player1 + 1, player2: captures.player2 })
+              setCaptures({ player1: captures.player1 + 1, player2: captures.player2 })
             else
-            setCaptures({ player1: captures.player1, player2: captures.player2 + 1 })
+              setCaptures({ player1: captures.player1, player2: captures.player2 + 1 })
           }
           if (result.gameOver)
-          setGameOver(turn == 1 ? 1 : 2)
+            setGameOver(turn == 1 ? 1 : 2)
           else
-          setTurn(turn ? 0 : 1)
+            setTurn(turn ? 0 : 1)
         }
         else if (result.gameOver)
-        setGameOver(2)
+          setGameOver(2)
+
+        const replays = replay
+        replays.push(result.newBoard)
+        setReplay(replays)
         setBoard(result.newBoard)
-        
+
       }
     }
   }
