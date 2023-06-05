@@ -10,6 +10,10 @@ interface Props {
   gameOver: number,
   replay: any[][],
   captures: { player1: number, player2: number }
+  possibleGameOver: number
+  prevMove: { y: number, x: number }
+  setPrevMove: React.Dispatch<React.SetStateAction<{ y: number, x: number }>>
+  setPossibleGameOver: React.Dispatch<React.SetStateAction<number>>
   setTurn: React.Dispatch<React.SetStateAction<number>>
   setBoard: React.Dispatch<React.SetStateAction<any[][]>>
   setGameOver: React.Dispatch<React.SetStateAction<number>>
@@ -42,7 +46,10 @@ function setPiece(x: number, y: number, player: number, board: any[][]) {
   return board
 }
 
-export const Grid = ({ board, turn, aiPlayer, setTurn, setBoard, gameOver, setGameOver, setScore, setCaptures, captures, replay, setReplay }: Props) => {
+export const Grid = ({ board, turn, aiPlayer, setTurn,
+  setBoard, gameOver, setGameOver, setScore, setCaptures,
+  captures, replay, setReplay, setPossibleGameOver, possibleGameOver,
+  prevMove, setPrevMove }: Props) => {
 
   const handleClick = async (e: any) => {
     console.clear()
@@ -55,6 +62,7 @@ export const Grid = ({ board, turn, aiPlayer, setTurn, setBoard, gameOver, setGa
       const newboard = JSON.parse(JSON.stringify(board))
       setPiece(i, j, turn, newboard)
       const start = performance.now();
+      // human player plays
       result = await counterMove(newboard, turn, false, { y: i, x: j })
       if (aiPlayer && result.valid) {
         if (result.fling)
@@ -90,7 +98,6 @@ export const Grid = ({ board, turn, aiPlayer, setTurn, setBoard, gameOver, setGa
         }
         else if (result.gameOver)
           setGameOver(2)
-
         const replays = replay
         replays.push(result.newBoard)
         setReplay(replays)

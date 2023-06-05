@@ -396,10 +396,14 @@ class Node {
             piece = getPiece(this.newPiece.y, this.newPiece.x + (j * sign), this.board)
             if (this.newPiece.x + (j * sign) < BOARD_SIZE && this.newPiece.x + (j * sign) >= 0) {  // range condition
                 if (streak.enemy.h_move && piece === (enemy)) {
-                    if (sign == 1)
+                    if (sign == 1){
+                        streak.ends.right = piece
                         streak.enemy.h_right++
-                    else
+                    }
+                    else{
+                        streak.ends.left = piece
                         streak.enemy.h_left++
+                    }
 
                 }
                 else
@@ -431,10 +435,15 @@ class Node {
             if (this.newPiece.y + (j * sign) < BOARD_SIZE && this.newPiece.y + (j * sign) >= 0) {  // range condition
 
                 if (streak.enemy.v_move && piece === (enemy)) {
-                    if (sign == 1)
+                    if (sign == 1){
                         streak.enemy.v_bottom++
-                    else
+                        streak.ends.bottom = piece
+                    }
+
+                    else{
+                        streak.ends.top = piece
                         streak.enemy.v_top++
+                    }
 
                 }
                 else
@@ -455,10 +464,14 @@ class Node {
             piece = getPiece(this.newPiece.y + (j * sign), this.newPiece.x + (j * sign), this.board)
             if (this.newPiece.y + (j * sign) < BOARD_SIZE && this.newPiece.x + (j * sign) < BOARD_SIZE && this.newPiece.y + (j * sign) >= 0 && this.newPiece.x + (j * sign) >= 0) {  // range condition
                 if (streak.enemy.dr_move && piece === (enemy)) {
-                    if (sign == 1)
+                    if (sign == 1){
+                        streak.ends.dbr = piece
                         streak.enemy.drb++
-                    else
+                    }
+                    else{
+                        streak.ends.dtl = piece
                         streak.enemy.dlt++
+                    }
 
                 }
                 else
@@ -477,12 +490,20 @@ class Node {
             // Calculate diagonal score (top-right to bottom-left)
             piece = getPiece(this.newPiece.y + (j * sign), this.newPiece.x - (j * sign), this.board)
             if (this.newPiece.y + (j * sign) < BOARD_SIZE && this.newPiece.x - (j * sign) < BOARD_SIZE && this.newPiece.y + (j * sign) >= 0 && this.newPiece.x - (j * sign) >= 0) {  // range condition
-
+                if (this.newPiece.x == 4 && this.newPiece.y == 15 && this.depth == 4 && this.player == AI) {
+                    console.log("debugging dlb")
+                    log(streak.enemy.dl_move,streak.availableSpace.dl_move, piece, sign)
+                    log(streak.ends.dbl)
+                }
                 if (streak.enemy.dl_move && piece === (enemy)) {
-                    if (sign == 1)
+                    if (sign == 1){
                         streak.enemy.dlb++
-                    else
+                        streak.ends.dbl = piece
+                    }
+                    else{
                         streak.enemy.drt++
+                        streak.ends.dtr = piece
+                    }
 
                 }
                 else
@@ -528,18 +549,19 @@ class Node {
     heuristics() {
         const player = this.scores.player
         const enemy = this.scores.enemy
+        const enemyPlayer = this.player == AI ? HUMAN : AI
 
         // analysing and asigning score to player pieces
-        const p_h = gomokuShapeScore(player.player.h_length, (player.ends.left != HUMAN ? 1 : 0) + (player.ends.right != HUMAN ? 1 : 0), true, player.player.h_left == 0 || player.player.h_right == 1)
-        const p_v = gomokuShapeScore(player.player.v_length, (player.ends.bottom != HUMAN ? 1 : 0) + (player.ends.top != HUMAN ? 1 : 0), true, player.player.v_top == 0 || player.player.v_bottom == 1)
-        const p_dl = gomokuShapeScore(player.player.dl_length, (player.ends.dbl != HUMAN ? 1 : 0) + (player.ends.dtr != HUMAN ? 1 : 0), true, player.player.drt == 0 || player.player.dlb == 1)
-        const p_dr = gomokuShapeScore(player.player.dr_length, (player.ends.dbr != HUMAN ? 1 : 0) + (player.ends.dtl != HUMAN ? 1 : 0), true, player.player.dlt == 0 || player.player.drb == 1)
+        const p_h = gomokuShapeScore(player.player.h_length, (player.ends.left != enemyPlayer ? 1 : 0) + (player.ends.right != enemyPlayer ? 1 : 0), true, player.player.h_left == 0 || player.player.h_right == 1, player.availableSpace.h_length)
+        const p_v = gomokuShapeScore(player.player.v_length, (player.ends.bottom != enemyPlayer ? 1 : 0) + (player.ends.top != enemyPlayer ? 1 : 0), true, player.player.v_top == 0 || player.player.v_bottom == 1, player.availableSpace.v_length)
+        const p_dl = gomokuShapeScore(player.player.dl_length, (player.ends.dbl != enemyPlayer ? 1 : 0) + (player.ends.dtr != enemyPlayer ? 1 : 0), true, player.player.drt == 0 || player.player.dlb == 1, player.availableSpace.dl_length)
+        const p_dr = gomokuShapeScore(player.player.dr_length, (player.ends.dbr != enemyPlayer ? 1 : 0) + (player.ends.dtl != enemyPlayer ? 1 : 0), true, player.player.dlt == 0 || player.player.drb == 1, player.availableSpace.dr_length)
 
         // analysing and asigning score to enemy pieces
-        const e_h = gomokuShapeScore(enemy.enemy.h_length, (enemy.ends.left != AI ? 1 : 0) + (enemy.ends.right != AI ? 1 : 0), false, enemy.enemy.h_left == 0 || enemy.enemy.h_right == 0)
-        const e_v = gomokuShapeScore(enemy.enemy.v_length, (enemy.ends.bottom != AI ? 1 : 0) + (enemy.ends.top != AI ? 1 : 0), false, enemy.enemy.v_top == 0 || enemy.enemy.v_bottom == 0)
-        const e_dl = gomokuShapeScore(enemy.enemy.dl_length, (enemy.ends.dbl != AI ? 1 : 0) + (enemy.ends.dtr != AI ? 1 : 0), false, enemy.enemy.drt == 0 || enemy.enemy.dlb == 0)
-        const e_dr = gomokuShapeScore(enemy.enemy.dr_length, (enemy.ends.dbr != AI ? 1 : 0) + (enemy.ends.dtl != AI ? 1 : 0), false, enemy.enemy.dlt == 0 || enemy.enemy.drb == 0)
+        const e_h = gomokuShapeScore(enemy.enemy.h_length, (enemy.ends.left == EMPTY_PIECE ? 1 : 0) + (enemy.ends.right == EMPTY_PIECE ? 1 : 0), false, enemy.enemy.h_left == 0 || enemy.enemy.h_right == 0, enemy.availableSpace.h_length)
+        const e_v = gomokuShapeScore(enemy.enemy.v_length, (enemy.ends.bottom == EMPTY_PIECE ? 1 : 0) + (enemy.ends.top == EMPTY_PIECE ? 1 : 0), false, enemy.enemy.v_top == 0 || enemy.enemy.v_bottom == 0, enemy.availableSpace.v_length)
+        const e_dl = gomokuShapeScore(enemy.enemy.dl_length, (enemy.ends.dbl == EMPTY_PIECE ? 1 : 0) + (enemy.ends.dtr == EMPTY_PIECE ? 1 : 0), false, enemy.enemy.drt == 0 || enemy.enemy.dlb == 0, enemy.availableSpace.dl_length)
+        const e_dr = gomokuShapeScore(enemy.enemy.dr_length, (enemy.ends.dbr == EMPTY_PIECE ? 1 : 0) + (enemy.ends.dtl == EMPTY_PIECE ? 1 : 0), false, enemy.enemy.dlt == 0 || enemy.enemy.drb == 0, enemy.availableSpace.dr_length)
 
 
         this.debug = { p_h, p_v, p_dl, p_dr, e_h, e_v, e_dl, e_dr }
@@ -573,16 +595,16 @@ class Node {
         this.freeThrees = freeThrees
 
         // checking possibility of flinging enemy pieces
-        if (this.newPiece.x == 0 && this.newPiece.y == 0 && this.depth == 5) {
-            console.log("debugging")
-            log(this.player)
+        // if (this.newPiece.x == 0 && this.newPiece.y == 0 && this.depth == 5) {
+        //     console.log("debugging")
+        //     log(this.player)
 
-            log(player)
-            log(enemy)
-            log("enemy.enemy.h_left ", enemy.enemy.h_left)
-            log("enemy.ends.left", enemy.ends.left)
+        //     log(player)
+        //     log(enemy)
+        //     log("enemy.enemy.h_left ", enemy.enemy.h_left)
+        //     log("enemy.ends.left", enemy.ends.left)
 
-        }
+        // }
 
 
         if (enemy.enemy.h_left == 2 && getPiece(i, j - 3, this.board) == this.player)         // left
@@ -610,17 +632,50 @@ class Node {
         if (enemy.enemy.dlt == 2 && getPiece(i - 3, j - 3, this.board) == this.player)            // diagonal left top
             this.fling = { y: -1, x: -1 }
 
-        player.player.h_length = player.availableSpace.h_length + player.player.h_length >= 5 ? player.player.h_length : 0
-        player.player.v_length = player.availableSpace.v_length + player.player.v_length >= 5 ? player.player.v_length : 0
+        // player.player.h_length = player.availableSpace.h_length + player.player.h_length >= 5 ? player.player.h_length : 0
+        // player.player.v_length = player.availableSpace.v_length + player.player.v_length >= 5 ? player.player.v_length : 0
+        // player.player.dl_length = player.availableSpace.dl_length + player.player.dl_length >= 5 ? player.player.dl_length : 0
+        // player.player.dr_length = player.availableSpace.dr_length + player.player.dr_length >= 5 ? player.player.dr_length : 0
 
-        player.player.dl_length = player.availableSpace.dl_length + player.player.dl_length >= 5 ? player.player.dl_length : 0
-        player.player.dr_length = player.availableSpace.dr_length + player.player.dr_length >= 5 ? player.player.dr_length : 0
+        // enemy.enemy.h_length = enemy.availableSpace.h_length + enemy.enemy.h_length >= 5 ? enemy.enemy.h_length : 0
+        // enemy.enemy.v_length = enemy.availableSpace.v_length + enemy.enemy.v_length >= 5 ? enemy.enemy.v_length : 0
+        // enemy.enemy.dl_length = enemy.availableSpace.dl_length + enemy.enemy.dl_length >= 5 ? enemy.enemy.dl_length : 0
+        // enemy.enemy.dr_length = enemy.availableSpace.dr_length + enemy.enemy.dr_length >= 5 ? enemy.enemy.dr_length : 0
+        // if (this.newPiece.x == 4 && this.newPiece.y == 15 && this.depth == 4 && this.player == AI) {
+        //     printBoard(this.board)
+        //     console.log("debugging")
+        //     log(player)
+        //     log(enemy)
+        // }
+        player.availableSpace.h_length = (player.availableSpace.h_length + player.player.h_length) >= 5
+        player.availableSpace.v_length = (player.availableSpace.v_length + player.player.v_length) >= 5
+        player.availableSpace.dl_length = (player.availableSpace.dl_length + player.player.dl_length) >= 5
+        player.availableSpace.dr_length = (player.availableSpace.dr_length + player.player.dr_length) >= 5
+
+        enemy.availableSpace.h_length = (enemy.availableSpace.h_length + enemy.enemy.h_length) >= 5
+        enemy.availableSpace.v_length = (enemy.availableSpace.v_length + enemy.enemy.v_length) >= 5
+        enemy.availableSpace.dl_length = (enemy.availableSpace.dl_length + enemy.enemy.dl_length) >= 5
+        enemy.availableSpace.dr_length = (enemy.availableSpace.dr_length + enemy.enemy.dr_length) >= 5
 
     }
 
 }
 
-function gomokuShapeScore(consecutive, openEnds, currentTurn, notSurounded) {
+function gomokuShapeScore(consecutive, openEnds, currentTurn, notSurounded, winnable) {
+    if (!winnable) {
+        if (consecutive == 2) {
+            if (!currentTurn && notSurounded)
+                return 20000; // Value player's open 3
+        }
+        if (consecutive == 3) {
+            if (notSurounded)
+                return 30000; // Prioritize blocking enemy's open 3
+        }
+        if (consecutive == 4 && !currentTurn) {
+            return 40000; // Prioritize blocking enemy's open 3
+        }
+        return 0
+    }
     if (openEnds == 0 && consecutive < 5 || consecutive == 0)
         return 0;
 
@@ -637,7 +692,7 @@ function gomokuShapeScore(consecutive, openEnds, currentTurn, notSurounded) {
                 case 2:
                     if (!currentTurn)
                         return 500000; // Prioritize blocking enemy's open 4
-                    return 30000; // Value player's open 4
+                    return 30500; // Value player's open 4
             }
 
         case 3:
@@ -770,6 +825,7 @@ function minimax(board, depth, alpha, beta, maximizingPlayer, tracker) {
     }
 
     if (depth === DEPTH) {
+        console.log(bestMove.scores)
         fling(bestMove)
         return bestMove; // If it's the first depth level, return the board of the best move
     }

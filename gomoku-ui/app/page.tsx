@@ -41,6 +41,8 @@ export default function Home() {
   const [captures, setCaptures] = useState({ player1: 0, player2: 0 })
   const [replay, setReplay] = useState<any[][]>([]);
   const [replayIndex, setReplayIndex] = useState(0);
+  const [possibleGameOver, setPossibleGameOver] = useState(0)
+  const [prevMove, setPrevMove] = useState({x: 0, y: 0})
   useEffect(() => {
     console.log("replay lenth", replay.length)
     if (gameOver == 1){
@@ -117,7 +119,9 @@ export default function Home() {
           <div className="basis-2/3 mb-5">
             <Grid board={board} turn={turn} aiPlayer={aiPlayer} setTurn={setTurn} setBoard={setBoard}
              gameOver={gameOver} setGameOver={setGameOver} setScore={setScore} 
-             captures={captures} setCaptures={setCaptures} replay={replay} setReplay={setReplay}/>
+             captures={captures} setCaptures={setCaptures} replay={replay} setReplay={setReplay}
+             possibleGameOver={possibleGameOver} setPossibleGameOver={setPossibleGameOver}
+             prevMove={prevMove} setPrevMove={setPrevMove}/>
           </div>
           <div className=" bg-white w-full md:w-1/3 max-w-[600px] max-h-[600px] shadow-md shadow-[#434141]">
             <Panel aiPlayer={aiPlayer} setAiPlayer={setAiPlayer} score={score} setGameOver={setGameOver}
